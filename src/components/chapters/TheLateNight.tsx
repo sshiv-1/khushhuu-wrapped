@@ -20,14 +20,14 @@ export default function TheLateNight({
   const peakH = stats.peakHour;
 
   return (
-    <section className="relative py-24 md:py-36 px-6 bg-ivory paper-grain">
+    <section className="relative py-28 md:py-40 px-6 bg-ivory paper-grain">
       <div className="max-w-5xl mx-auto">
         <motion.div
-          className="text-center mb-16 md:mb-24"
-          initial={{ opacity: 0, y: 30 }}
+          className="text-center mb-20 md:mb-28"
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.2 }}
+          transition={{ duration: 1.4 }}
         >
           <p className="font-sans text-xs uppercase tracking-[0.3em] text-sage-dark mb-4">
             Chapter Four
@@ -42,21 +42,21 @@ export default function TheLateNight({
 
         {/* Large heatmap */}
         <motion.div
-          className="paper-shadow bg-white/50 rounded-soft p-6 md:p-10 border border-warm/30 mb-16"
-          initial={{ opacity: 0, y: 40 }}
+          className="paper-shadow bg-white/50 rounded-soft p-6 md:p-10 border border-warm/30 mb-20"
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 1.1 }}
         >
           <p className="font-sans text-xs uppercase tracking-[0.2em] text-faded-brown mb-8 text-center">
             The conversation pulse
           </p>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto heatmap-scroll">
             <div className="grid gap-[3px] min-w-[700px]" style={{ gridTemplateColumns: `50px repeat(24, 1fr)` }}>
               <div />
               {HOUR_LABELS_SHORT.map((h, i) => (
                 <div
-                  key={h}
+                  key={`hour-${i}`}
                   className={`text-center font-sans text-[9px] py-2 ${
                     i === peakH ? "text-sage-dark font-semibold" : "text-faded-brown/40"
                   }`}
@@ -72,18 +72,17 @@ export default function TheLateNight({
                   </div>
                   {stats.hourHeatmap[d].map((v, h) => {
                     const intensity = maxHeat > 0 ? v / maxHeat : 0;
-                    const isPeak = h === peakH;
                     return (
                       <motion.div
                         key={`${d}-${h}`}
-                        className="rounded-[2px] aspect-square relative flex items-center justify-center"
+                        className="rounded-[2px] aspect-square relative"
                         style={{
                           backgroundColor: `rgba(156, 175, 136, ${0.04 + intensity * 0.9})`,
                         }}
-                        initial={{ opacity: 0, scale: 0.5 }}
+                        initial={{ opacity: 0, scale: 0.8 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
-                        transition={{ delay: (d * 24 + h) * 0.0005, duration: 0.3 }}
+                        transition={{ duration: 0.3, delay: 0.05 }}
                       />
                     );
                   })}
@@ -108,16 +107,16 @@ export default function TheLateNight({
         {/* Narrative insight */}
         <div className="text-center space-y-8">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 1 }}
+            transition={{ duration: 1.2 }}
           >
             <p className="font-display text-6xl md:text-8xl text-sage-dark mb-4">
               {stats.peakHourFormatted}
             </p>
             <p className="font-sans text-xs uppercase tracking-[0.2em] text-faded-brown mb-4">
-              the hour that was always yours
+              when the conversation peaked
             </p>
           </motion.div>
 
@@ -126,7 +125,7 @@ export default function TheLateNight({
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 1.5, delay: 0.3 }}
+            transition={{ duration: 1.8, delay: 0.2 }}
           >
             {chapter.beats[0]?.narrative}
           </motion.p>

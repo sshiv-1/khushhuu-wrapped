@@ -36,7 +36,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="py-16 text-center bg-cream paper-grain">
         <p className="font-handwritten text-xl text-faded-brown">
-          made with love
+          made with care
         </p>
         <p className="font-sans text-[10px] uppercase tracking-[0.3em] text-faded-brown/50 mt-3">
           A year in messages

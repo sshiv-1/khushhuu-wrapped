@@ -3,13 +3,75 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_PATH = path.join(__dirname, "..", "..", "1197641555076031", "message_1.json");
+
+// Try multiple possible paths for the Instagram data
+const POSSIBLE_PATHS = [
+  path.join(__dirname, "..", "..", "data", "your_instagram_activity", "messages", "inbox", "kohlipaglu_1228597485313771", "message_1.json"),
+  path.join(__dirname, "..", "..", "1197641555076031", "message_1.json"),
+];
+
+const DATA_PATH = POSSIBLE_PATHS.find((p) => fs.existsSync(p));
+if (!DATA_PATH) {
+  console.error("Could not find Instagram message_1.json at any expected path:");
+  POSSIBLE_PATHS.forEach((p) => console.error("  -", p));
+  process.exit(1);
+}
+console.log(`Using data from: ${DATA_PATH}`);
+
 const OUT_PATH = path.join(__dirname, "..", "src", "data", "story-data.json");
 
-const EMOJI_REGEX = /(\p{Emoji_Presentation}|\p{Emoji}️|\u{200D}|\p{Extended_Pictographic})/gu;
+// ── Instagram Mojibake Fix ──
+// Instagram exports UTF-8 text as Latin-1 encoded \u00XX sequences.
+// e.g. 😭 (U+1F62D) → UTF-8 bytes F0 9F 98 AD → stored as \u00f0\u009f\u0098\u00ad
+// When Node.js parses the JSON, it treats each \u00XX as a Latin-1 codepoint,
+// producing garbled text. We fix this by converting each string's char codes
+// back to bytes and re-decoding as UTF-8.
+function fixMojibake(str) {
+  if (!str) return str;
+  try {
+    // Convert each character's code point to a byte value
+    const bytes = new Uint8Array(str.length);
+    let hasMojibake = false;
+    for (let i = 0; i < str.length; i++) {
+      const code = str.charCodeAt(i);
+      bytes[i] = code & 0xff;
+      // If any char has a code > 127 but < 256, it's likely mojibake
+      if (code > 127 && code < 256) hasMojibake = true;
+    }
+    if (!hasMojibake) return str;
+    // Re-decode the byte sequence as UTF-8
+    const decoded = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+    // Verify the decode didn't produce replacement characters for the whole string
+    if (decoded && !decoded.includes("\ufffd")) return decoded;
+    // If decoding failed partially, try a mixed approach: decode chunks
+    return str;
+  } catch {
+    return str;
+  }
+}
+
+// Recursively fix all strings in the parsed Instagram JSON
+function fixAllStrings(obj) {
+  if (typeof obj === "string") return fixMojibake(obj);
+  if (Array.isArray(obj)) return obj.map(fixAllStrings);
+  if (obj && typeof obj === "object") {
+    const fixed = {};
+    for (const [k, v] of Object.entries(obj)) {
+      fixed[k] = fixAllStrings(v);
+    }
+    return fixed;
+  }
+  return obj;
+}
+
+// Emoji regex that works on properly decoded UTF-8 strings
+const EMOJI_REGEX = /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu;
 
 // ── Parse ──
-const raw = JSON.parse(fs.readFileSync(DATA_PATH, "utf-8"));
+const rawJson = fs.readFileSync(DATA_PATH, "utf-8");
+const rawParsed = JSON.parse(rawJson);
+const raw = fixAllStrings(rawParsed);
+
 const participants = raw.participants.map((p) => p.name);
 
 const messages = raw.messages
@@ -48,6 +110,10 @@ for (const m of messages) {
 }
 
 const topEmojis = [...emojiMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15);
+
+// Debug: show top emojis found
+console.log("Top emojis found:");
+topEmojis.slice(0, 5).forEach(([emoji, count]) => console.log(`  ${emoji} → ${count}`));
 
 const hourCounts = new Array(24).fill(0);
 for (const m of messages) hourCounts[m.hour]++;
@@ -115,7 +181,12 @@ function pickMemorable(msgs) {
   // funny short
   const funny = msgs.filter((m) => m.charCount < 60 && m.charCount > 3 && /\b(lol|haha|lmao|funny|joke|silly|crazy|wild|insane|dumb|stupid|okie|acha|matlab)\b/i.test(m.content));
   for (const m of funny.reverse()) { if (!seenDays.has(m.dateKey) && candidates.length < 24) { candidates.push(m); seenDays.add(m.dateKey); } }
-  return candidates.sort(() => Math.random() - 0.5).slice(0, 12);
+  // Deterministic shuffle using index-based seed (avoids hydration mismatch)
+  return candidates
+    .map((m, i) => ({ m, sort: ((i * 2654435761) >>> 0) % 1000 }))
+    .sort((a, b) => a.sort - b.sort)
+    .map((x) => x.m)
+    .slice(0, 12);
 }
 
 // ── Story engine ──
@@ -129,41 +200,41 @@ const chapters = [
     chapter: "The Receipts",
     lead: "Some things are worth counting. Not out of obsession — but because each number is a tiny piece of a story.",
     beats: [
-      { id: "total-messages", title: "Messages", subtitle: "Little ways of finding each other", narrative: `${messages.length.toLocaleString()} messages. Each one a thread in the fabric of an entire year. A word here, a laugh there — small moments that quietly built something extraordinary.`, stat: messages.length.toLocaleString() },
-      { id: "days-talking", title: "Days Together", subtitle: "Even when apart, never distant", narrative: `Out of ${daysSpan} days, conversation never really stopped. ${stats.messagesPerDay.toFixed(1)} messages a day on average — not because you had to talk, but because you wanted to.`, stat: daysSpan.toString() },
-      { id: "reels-shared", title: "Reels Shared", subtitle: "A language of their own", narrative: `${stats.reelsShared} reels passed between you. Little dispatches that said "this made me think of you" — maybe the quietest way of saying the biggest thing.`, stat: stats.reelsShared.toString() },
-      { id: "attachments", title: "Shared Moments", subtitle: "More than just words", narrative: `${stats.attachmentsTotal} photos, videos, and audio notes. Because sometimes words aren't enough, and sometimes a voice or a picture carries everything that text cannot.`, stat: stats.attachmentsTotal.toString() },
+      { id: "total-messages", title: "Messages", subtitle: "One conversation at a time", narrative: `${messages.length.toLocaleString()} messages. Each one a small thread in the fabric of an entire year. A word here, a laugh there — little moments that quietly added up to something real.`, stat: messages.length.toLocaleString() },
+      { id: "days-talking", title: "Days Together", subtitle: "A year of showing up", narrative: `Out of ${daysSpan} days, conversation never really stopped. ${stats.messagesPerDay.toFixed(1)} messages a day on average — not because you had to, but because you wanted to.`, stat: daysSpan.toString() },
+      { id: "reels-shared", title: "Reels Shared", subtitle: "A shorthand of their own", narrative: `${stats.reelsShared} reels passed between you. Little dispatches that said "this reminded me of you" — a shorthand that needed no explanation.`, stat: stats.reelsShared.toString() },
+      { id: "attachments", title: "Shared Moments", subtitle: "More than just words", narrative: `${stats.attachmentsTotal} photos, videos, and audio notes. Because sometimes words aren't enough, and sometimes a voice note or a picture says it better.`, stat: stats.attachmentsTotal.toString() },
     ],
   },
   {
     chapter: "The Shape of Us",
-    lead: "Every relationship has a rhythm. A shape. A season. This is what yours looked like from above.",
+    lead: "Every conversation has a rhythm. A pattern. A season. This is what yours looked like from above.",
     beats: [
-      { id: "rhythm", title: "Your Rhythm", subtitle: "The pulse of a year", narrative: `Your conversations had their own gentle cadence — sometimes a flood of words, sometimes a quiet trickle. But never silence. Never distance. Just the steady hum of two people staying close.`, stat: `${stats.messagesPerDay.toFixed(0)} avg/day` },
-      { id: "busiest-month", title: busiestMonthName, subtitle: "The month you couldn't stop talking", narrative: `${busiestMonthName} was when the words spilled out fastest. Maybe it was the season. Maybe it was something in the air. But something about that month made you both reach for each other more.`, stat: busiestMonthName },
-      { id: "longest-gap", title: "Longest Silence", subtitle: "Even the quiet meant something", narrative: `The longest stretch without talking was ${stats.longestGap} hours. In a year of thousands of messages, that's remarkable — and says more than any word count ever could.`, stat: `${stats.longestGap}h` },
+      { id: "rhythm", title: "Your Rhythm", subtitle: "The pulse of a year", narrative: `Your conversations had their own cadence — sometimes a flood of words, sometimes a quiet trickle. Sometimes louder, sometimes quieter. Just two people keeping the thread going.`, stat: `${stats.messagesPerDay.toFixed(0)} avg/day` },
+      { id: "busiest-month", title: busiestMonthName, subtitle: "The month you couldn't stop talking", narrative: `${busiestMonthName} was when the words spilled out fastest. Maybe it was the season. Maybe it was just the mood. Something about that month made you both a little more talkative.`, stat: busiestMonthName },
+      { id: "longest-gap", title: "Longest Silence", subtitle: "Even the quiet meant something", narrative: `The longest stretch without talking was ${stats.longestGap} hours. In a year of thousands of messages, that gap says something too.`, stat: `${stats.longestGap}h` },
     ],
   },
   {
     chapter: "The Vocabulary",
-    lead: "Every couple develops their own language. Inside jokes. Shorthand. A private dictionary that only two people in the world understand.",
+    lead: "Sooner or later, you develop your own language. Shorthand. Inside jokes. Things that only make sense between the two of you.",
     beats: [
-      { id: "emoji-language", title: "Your Emoji Language", subtitle: topEmojis[0] ? `${topEmojis[0][0]}${topEmojis[1]?.[0] ?? ""}${topEmojis[2]?.[0] ?? ""} — a private vocabulary` : "", narrative: topEmojis[0] ? `When words failed, ${topEmojis[0][0]} stepped in. And ${topEmojis[1]?.[0] ?? ""}. And ${topEmojis[2]?.[0] ?? ""}. A tiny visual language that no one else would read the same way.` : "Your emoji language became its own dialect.", stat: topEmojis[0] ? `${topEmojis[0][0]} ${topEmojis[1]?.[0] ?? ""} ${topEmojis[2]?.[0] ?? ""}` : "", emoji: topEmojis[0]?.[0] ?? "" },
-      { id: "message-length", title: "Short & Sweet", subtitle: "When less says more", narrative: `${stats.shortMessagePct}% of your messages were short — under thirty characters. A quick "okiee," a single emoji, a word that only makes sense to the two of you.`, stat: `${stats.shortMessagePct}%` },
-      { id: "average-length", title: "Words Between You", subtitle: "Every message a small gift", narrative: `On average, your messages were ${stats.avgMessageLength} characters long. Not too much, not too little. Just enough.`, stat: `${stats.avgMessageLength} chars` },
+      { id: "emoji-language", title: "Your Emoji Language", subtitle: topEmojis[0] ? `${topEmojis[0][0]}${topEmojis[1]?.[0] ?? ""}${topEmojis[2]?.[0] ?? ""} — a private vocabulary` : "", narrative: topEmojis[0] ? `When words weren't enough, ${topEmojis[0][0]} stepped in. And ${topEmojis[1]?.[0] ?? ""}. And ${topEmojis[2]?.[0] ?? ""}. A tiny visual language that no one else would read the same way.` : "Your emoji language became its own dialect.", stat: topEmojis[0] ? `${topEmojis[0][0]} ${topEmojis[1]?.[0] ?? ""} ${topEmojis[2]?.[0] ?? ""}` : "", emoji: topEmojis[0]?.[0] ?? "" },
+      { id: "message-length", title: "Short & Sweet", subtitle: "When less says more", narrative: `${stats.shortMessagePct}% of your messages were short — under thirty characters. A quick "okiee," a single emoji, a word that only makes sense between the two of you.`, stat: `${stats.shortMessagePct}%` },
+      { id: "average-length", title: "Words Between You", subtitle: "The average dispatch", narrative: `On average, your messages were ${stats.avgMessageLength} characters long. Not too much, not too little. Just enough.`, stat: `${stats.avgMessageLength} chars` },
     ],
   },
   {
     chapter: "The Late Night Hours",
-    lead: `Somehow, ${peakHourHuman} always became yours. The world got quiet, and your conversation came alive.`,
+    lead: `Somehow, ${peakHourHuman} always felt a little more familiar. The phone lit up a little more often.`,
     beats: [
-      { id: "peak-hour", title: `The ${peakHourFormatted} Hour`, subtitle: "When the world fell away", narrative: `${peakHourFormatted}. ${peakHourHuman}. That was your hour. When distractions faded and conversations deepened. When reels, thoughts, and quiet confessions found their way across the distance between you.`, stat: peakHourFormatted },
-      { id: "heatmap", title: "Night Owls", subtitle: "The hours that held you together", narrative: "The patterns trace themselves across days and nights. You belonged to the quiet hours — when the rest of the world was asleep and there was only each other's words on the screen.", stat: "" },
+      { id: "peak-hour", title: `The ${peakHourFormatted} Hour`, subtitle: "When the notifications piled up", narrative: `${peakHourFormatted}. ${peakHourHuman}. That was your hour. When distractions faded and conversations picked up. When reels, thoughts, and random updates found their way across.`, stat: peakHourFormatted },
+      { id: "heatmap", title: "Night Owls", subtitle: "When the conversations happened", narrative: "The patterns tell a story. Some hours were consistently busier than others — certain times of day just felt more natural to talk.", stat: "" },
     ],
   },
   {
     chapter: "Memory Cards",
-    lead: "Some messages are numbers in a spreadsheet. Others are little monuments — moments worth pulling out and holding up to the light.",
+    lead: "Some messages are just data. Others are little artifacts — the kind worth saving.",
     beats: [],
   },
 ];

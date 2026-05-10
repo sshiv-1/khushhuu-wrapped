@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "One Year",
-  description: "A love archive",
+  description: "A year in messages",
 };
 
 const FONTS_URL =
