@@ -4,19 +4,36 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Try multiple possible paths for the Instagram data
-const POSSIBLE_PATHS = [
+// ── Data Source Discovery ──
+// All known paths where Instagram message data may live (both old & new exports)
+const DATA_DIR = path.join(__dirname, "..", "data");
+const KNOWN_PATHS = [
+  // Primary: data/ folder inside web-app
+  path.join(DATA_DIR, "your_instagram_activity", "messages", "inbox", "kohlipaglu_1228597485313771", "message_1.json"),
+  path.join(DATA_DIR, "your_instagram_activity", "1197641555076031", "message_1.json"),
+  // Legacy: data folder one level above web-app (previous structure)
   path.join(__dirname, "..", "..", "data", "your_instagram_activity", "messages", "inbox", "kohlipaglu_1228597485313771", "message_1.json"),
   path.join(__dirname, "..", "..", "1197641555076031", "message_1.json"),
 ];
 
-const DATA_PATH = POSSIBLE_PATHS.find((p) => fs.existsSync(p));
-if (!DATA_PATH) {
-  console.error("Could not find Instagram message_1.json at any expected path:");
-  POSSIBLE_PATHS.forEach((p) => console.error("  -", p));
+// Resolve to absolute and deduplicate, keeping only paths that exist
+const ALL_DATA_PATHS = [];
+const seenPaths = new Set();
+for (const p of KNOWN_PATHS) {
+  const resolved = path.resolve(p);
+  if (!seenPaths.has(resolved) && fs.existsSync(resolved)) {
+    seenPaths.add(resolved);
+    ALL_DATA_PATHS.push(resolved);
+  }
+}
+
+if (ALL_DATA_PATHS.length === 0) {
+  console.error("Could not find any Instagram message_1.json files at expected paths:");
+  KNOWN_PATHS.forEach((p) => console.error("  -", p));
   process.exit(1);
 }
-console.log(`Using data from: ${DATA_PATH}`);
+console.log(`Found ${ALL_DATA_PATHS.length} data source(s):`);
+ALL_DATA_PATHS.forEach((p) => console.log(`  → ${p}`));
 
 const OUT_PATH = path.join(__dirname, "..", "src", "data", "story-data.json");
 
@@ -67,20 +84,57 @@ function fixAllStrings(obj) {
 // Emoji regex that works on properly decoded UTF-8 strings
 const EMOJI_REGEX = /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu;
 
-// ── Parse ──
-const rawJson = fs.readFileSync(DATA_PATH, "utf-8");
-const rawParsed = JSON.parse(rawJson);
-const raw = fixAllStrings(rawParsed);
+// ── Parse & Merge All Data Sources ──
+const YOU = "shhiiiivvv"; // The constant participant across all conversations
+const allRawMessages = [];
+const participantNames = new Set();
 
-const participants = raw.participants.map((p) => p.name);
+for (const dataPath of ALL_DATA_PATHS) {
+  const rawJson = fs.readFileSync(dataPath, "utf-8");
+  const rawParsed = JSON.parse(rawJson);
+  const raw = fixAllStrings(rawParsed);
 
-const messages = raw.messages
+  for (const p of raw.participants) {
+    participantNames.add(p.name);
+  }
+
+  console.log(`  Loaded ${raw.messages.length} messages from ${path.basename(path.dirname(dataPath))}`);
+  for (const m of raw.messages) {
+    allRawMessages.push(m);
+  }
+}
+
+// Normalize sender names: map all non-"shhiiiivvv" senders to a single canonical name
+// Use the first non-you name encountered as canonical (preserves the original export's name)
+const otherNames = [...participantNames].filter((n) => n !== YOU);
+const canonicalFriend = "sweetie"; // Display name for the friend
+const participants = [canonicalFriend, YOU];
+
+console.log(`\nParticipants: ${[...participantNames].join(", ")}`);
+console.log(`Canonical friend name: ${canonicalFriend}`);
+console.log(`Total raw messages before dedup: ${allRawMessages.length}`);
+
+// Deduplicate by timestamp_ms (in case any messages appear in multiple exports)
+const seenTimestamps = new Set();
+const dedupedMessages = [];
+allRawMessages.sort((a, b) => a.timestamp_ms - b.timestamp_ms);
+for (const m of allRawMessages) {
+  if (!seenTimestamps.has(m.timestamp_ms)) {
+    seenTimestamps.add(m.timestamp_ms);
+    dedupedMessages.push(m);
+  }
+}
+console.log(`After dedup: ${dedupedMessages.length} unique messages\n`);
+
+const messages = dedupedMessages
   .map((m) => {
     const d = new Date(m.timestamp_ms);
     const content = m.content ?? "";
     const isReel = m.share?.link?.includes("/reel/") ?? false;
+    // Normalize sender: anyone who isn't "shhiiiivvv" maps to the canonical friend name
+    const sender = m.sender_name === YOU ? YOU : canonicalFriend;
     return {
-      sender: m.sender_name,
+      sender,
       timestamp: d.toISOString(),
       content,
       hasShare: !!m.share,
