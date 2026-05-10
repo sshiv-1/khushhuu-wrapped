@@ -47,42 +47,46 @@ export default function TheShapeOfUs({
           <p className="font-sans text-xs uppercase tracking-[0.2em] text-faded-brown mb-8 text-center">
             The rhythm of a year
           </p>
-          <div className="flex items-end gap-1 md:gap-2 h-48 justify-center">
-            {Object.entries(stats.monthlyCounts)
-              .sort()
-              .map(([month, count], i) => {
-                const maxCount = Math.max(...Object.values(stats.monthlyCounts));
-                const height = (count / maxCount) * 100;
-                const monthNames = [
-                  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-                ];
+          <div className="flex items-end gap-1 md:gap-2 justify-center">
+            {(() => {
+              const entries = Object.entries(stats.monthlyCounts).sort();
+              const maxCount = Math.max(...entries.map(([, c]) => c));
+              const monthNames = [
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+              ];
+              return entries.map(([month, count], i) => {
+                const heightPct = maxCount > 0 ? (count / maxCount) * 100 : 0;
                 const mIdx = parseInt(month.split("-")[1]) - 1;
                 return (
                   <motion.div
                     key={month}
-                    className="flex flex-col items-center gap-2 flex-1 max-w-[40px]"
+                    className="flex flex-col items-center flex-1 max-w-[48px]"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.06, duration: 0.8 }}
                   >
-                    <span className="font-sans text-[10px] text-faded-brown">
+                    <span className="font-sans text-[10px] text-faded-brown mb-1">
                       {count}
                     </span>
-                    <motion.div
-                      className="w-full bg-sage/50 rounded-t-sm"
-                      initial={{ height: 0 }}
-                      whileInView={{ height: `${height}%` }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.06, duration: 1, ease: "easeOut" }}
-                    />
-                    <span className="font-sans text-[10px] uppercase text-faded-brown/60">
+                    <div className="w-full relative" style={{ height: '144px' }}>
+                      <motion.div
+                        className="absolute bottom-0 left-0 right-0 rounded-t-sm"
+                        style={{ backgroundColor: 'rgba(156, 175, 136, 0.55)' }}
+                        initial={{ height: 0 }}
+                        whileInView={{ height: `${heightPct}%` }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.06, duration: 1, ease: "easeOut" }}
+                      />
+                    </div>
+                    <span className="font-sans text-[10px] uppercase text-faded-brown/60 mt-1">
                       {monthNames[mIdx]}
                     </span>
                   </motion.div>
                 );
-              })}
+              });
+            })()}
           </div>
         </motion.div>
 
