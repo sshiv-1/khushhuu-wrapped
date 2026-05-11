@@ -7,6 +7,7 @@ import TheShapeOfUs from "@/components/chapters/TheShapeOfUs";
 import TheVocabulary from "@/components/chapters/TheVocabulary";
 import TheLateNight from "@/components/chapters/TheLateNight";
 import MemoryCards from "@/components/chapters/MemoryCards";
+import PolarizedTracks from "@/components/chapters/PolarizedTracks";
 import ScallopDivider from "@/components/scrapbook/ScallopDivider";
 import { generateStory } from "@/lib/story-engine";
 
@@ -32,6 +33,8 @@ export default function HomePage() {
       <TheLateNight stats={story.stats} chapter={latenight} />
       <ScallopDivider />
       <MemoryCards messages={story.messages} chapter={memories} />
+      <ScallopDivider />
+      <PolarizedTracks />
 
       {/* Footer */}
       <footer className="py-16 text-center bg-cream paper-grain">
