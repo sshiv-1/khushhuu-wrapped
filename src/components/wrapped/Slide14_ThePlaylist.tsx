@@ -14,7 +14,7 @@ export default function Slide14_ThePlaylist() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+          transition={{ duration: 0.7, ease: "easeOut" as const }}
         >
           luv luv luv
         </motion.p>
@@ -31,7 +31,7 @@ export default function Slide14_ThePlaylist() {
               transition={{
                 duration: 0.6,
                 delay: i * 0.05,
-                ease: "easeOut",
+                ease: "easeOut" as const,
               }}
             >
               <span className="font-serif italic text-[0.95rem] text-ink leading-snug">

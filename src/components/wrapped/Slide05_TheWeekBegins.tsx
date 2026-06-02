@@ -17,7 +17,7 @@ export default function Slide05_TheWeekBegins() {
           className="w-10 h-px bg-faded-brown/35"
           variants={{
             hidden: { opacity: 0, scaleX: 0 },
-            show: { opacity: 1, scaleX: 1, transition: { duration: 0.8, ease: "easeOut" } },
+            show: { opacity: 1, scaleX: 1, transition: { duration: 0.8, ease: "easeOut" as const } },
           }}
         />
 
@@ -26,7 +26,7 @@ export default function Slide05_TheWeekBegins() {
           style={{ fontSize: "clamp(1.9rem, 5vw, 3.25rem)" }}
           variants={{
             hidden: { opacity: 0, y: 20, scale: 0.97 },
-            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" } },
+            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
           }}
         >
           and then there was last week.
@@ -36,7 +36,7 @@ export default function Slide05_TheWeekBegins() {
           className="font-serif italic text-sm text-faded-brown tracking-wide"
           variants={{
             hidden: { opacity: 0, y: 20, scale: 0.97 },
-            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" } },
+            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
           }}
         >
           may 28. the conversation picked back up.

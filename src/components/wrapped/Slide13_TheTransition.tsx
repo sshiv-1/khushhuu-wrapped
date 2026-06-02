@@ -17,7 +17,7 @@ export default function Slide13_TheTransition() {
           className="w-10 h-px bg-faded-brown/35"
           variants={{
             hidden: { opacity: 0, scaleX: 0 },
-            show: { opacity: 1, scaleX: 1, transition: { duration: 0.8, ease: "easeOut" } },
+            show: { opacity: 1, scaleX: 1, transition: { duration: 0.8, ease: "easeOut" as const } },
           }}
         />
 
@@ -26,7 +26,7 @@ export default function Slide13_TheTransition() {
           style={{ fontSize: "clamp(1.9rem, 5vw, 3.25rem)" }}
           variants={{
             hidden: { opacity: 0, y: 20, scale: 0.97 },
-            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" } },
+            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
           }}
         >
           and this is what it sounded like.
@@ -36,7 +36,7 @@ export default function Slide13_TheTransition() {
           className="font-serif italic text-sm text-faded-brown tracking-wide"
           variants={{
             hidden: { opacity: 0, y: 20, scale: 0.97 },
-            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" } },
+            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
           }}
         >
           24 songs. picked on purpose.

@@ -33,7 +33,7 @@ export default function SpotifyButton() {
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
+        transition={{ duration: 0.7, ease: "easeOut" as const }}
         whileHover={{ y: -3, boxShadow: "0 4px 20px rgba(0,0,0,0.07)" }}
       >
         <SpotifyIcon />

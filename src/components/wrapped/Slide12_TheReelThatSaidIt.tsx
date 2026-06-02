@@ -19,7 +19,7 @@ export default function Slide12_TheReelThatSaidIt() {
           style={{ fontSize: "clamp(4rem, 10vw, 7rem)", lineHeight: 0.8 }}
           variants={{
             hidden: { opacity: 0 },
-            show: { opacity: 1, transition: { duration: 0.7, ease: "easeOut" } },
+            show: { opacity: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
           }}
           aria-hidden
         >
@@ -32,7 +32,7 @@ export default function Slide12_TheReelThatSaidIt() {
           style={{ fontSize: "clamp(1.2rem, 2.6vw, 1.9rem)" }}
           variants={{
             hidden: { opacity: 0, y: 20, scale: 0.97 },
-            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" } },
+            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
           }}
         >
           {weekMemorableReel.text}
@@ -43,7 +43,7 @@ export default function Slide12_TheReelThatSaidIt() {
           className="font-sans text-xs uppercase tracking-[0.25em] text-faded-brown/70"
           variants={{
             hidden: { opacity: 0, y: 20, scale: 0.97 },
-            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" } },
+            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
           }}
         >
           a reel. sent. {weekMemorableReel.date}.
