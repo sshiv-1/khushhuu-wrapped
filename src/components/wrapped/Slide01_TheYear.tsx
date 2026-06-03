@@ -23,7 +23,7 @@ export default function Slide01_TheYear() {
         viewport={{ once: true, margin: "-100px" }}
       >
         <motion.p variants={item} className="font-sans text-xs uppercase tracking-[0.25em] text-sp-green">
-          A Year in Messages
+          Spotify Wrapped Edition
         </motion.p>
 
         <motion.h2
@@ -31,11 +31,11 @@ export default function Slide01_TheYear() {
           className="font-serif italic font-normal text-sp-white leading-none"
           style={{ fontSize: "clamp(4.5rem, 12vw, 9rem)" }}
         >
-          One Year
+          khushu wrapped
         </motion.h2>
 
         <motion.p variants={item} className="font-serif italic text-sm text-sp-muted tracking-wide">
-          365 days. it never really stopped.
+          guess i'm never gonna stop annoying ya
         </motion.p>
       </motion.div>
     </div>
