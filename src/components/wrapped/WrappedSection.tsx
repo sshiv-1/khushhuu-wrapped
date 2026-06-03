@@ -15,9 +15,8 @@ import Slide11_TheHearts from "./Slide11_TheHearts";
 import Slide12_TheReelThatSaidIt from "./Slide12_TheReelThatSaidIt";
 import Slide13_TheTransition from "./Slide13_TheTransition";
 import Slide14_ThePlaylist from "./Slide14_ThePlaylist";
-import SpotifyButton from "./SpotifyButton";
 
-const TOTAL_SLIDES = 15; // 14 slides + spotify button
+const TOTAL_SLIDES = 14;
 
 export default function WrappedSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -59,7 +58,6 @@ export default function WrappedSection() {
         {/* Part Three: The Music */}
         <Slide13_TheTransition />
         <Slide14_ThePlaylist />
-        <SpotifyButton />
       </div>
 
       {/* Navigation dots */}
