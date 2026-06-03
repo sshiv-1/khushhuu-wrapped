@@ -1,8 +1,10 @@
 "use client";
 
+import { useSlideAudio } from "@/hooks/useSlideAudio";
 import { motion } from "framer-motion";
 
-export default function Slide13_TheTransition() {
+export default function Slide13_TheTransition({ isActive = false, previewUrl }: { isActive?: boolean, previewUrl?: string }) {
+  useSlideAudio(previewUrl, isActive);
   return (
     <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div

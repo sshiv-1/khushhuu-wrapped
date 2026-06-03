@@ -1,5 +1,6 @@
 "use client";
 
+import { useSlideAudio } from "@/hooks/useSlideAudio";
 import { motion } from "framer-motion";
 import { weekTotalMessages } from "@/data/weekData";
 
@@ -13,7 +14,8 @@ const item = {
   show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
 };
 
-export default function Slide06_TheWeekCount() {
+export default function Slide06_TheWeekCount({ isActive = false, previewUrl }: { isActive?: boolean, previewUrl?: string }) {
+  useSlideAudio(previewUrl, isActive);
   return (
     <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div

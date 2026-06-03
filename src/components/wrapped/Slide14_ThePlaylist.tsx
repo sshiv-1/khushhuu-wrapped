@@ -1,5 +1,6 @@
 "use client";
 
+import { useSlideAudio } from "@/hooks/useSlideAudio";
 import { motion } from "framer-motion";
 
 const PLAYLIST_URL =
@@ -29,7 +30,8 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } },
 };
 
-export default function Slide14_ThePlaylist() {
+export default function Slide14_ThePlaylist({ isActive = false, previewUrl }: { isActive?: boolean, previewUrl?: string }) {
+  useSlideAudio(previewUrl, isActive);
   return (
     <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div

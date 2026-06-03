@@ -1,11 +1,12 @@
-"use client";
-
 import WrappedSection from "@/components/wrapped/WrappedSection";
+import { fetchPlaylistTracks } from "@/lib/spotify";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const tracks = await fetchPlaylistTracks("luv luv luv");
+  
   return (
-    <main className="bg-ivory">
-      <WrappedSection />
+    <main className="bg-sp-dark">
+      <WrappedSection tracks={tracks} />
     </main>
   );
 }
