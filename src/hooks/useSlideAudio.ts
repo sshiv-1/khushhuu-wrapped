@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useAudioContext } from "@/components/wrapped/AudioContext";
 
 export function useSlideAudio(previewUrl: string | undefined, isActive: boolean) {
-  const { isMuted } = useAudioContext();
+  const { isMuted, audioUnlocked } = useAudioContext();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fadeInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -26,7 +26,7 @@ export function useSlideAudio(previewUrl: string | undefined, isActive: boolean)
       clearInterval(fadeInterval.current);
     }
 
-    if (isActive && !isMuted) {
+    if (isActive && !isMuted && audioUnlocked) {
       // Fade in to 0.6 over 800ms
       audio.play().catch(() => {});
       let vol = audio.volume;

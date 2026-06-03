@@ -38,26 +38,47 @@ function MuteToggle() {
   );
 }
 
+function AudioOverlay() {
+  const { audioUnlocked, unlockAudio } = useAudioContext();
+  if (audioUnlocked) return null;
+  
+  return (
+    <div 
+      className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center cursor-pointer"
+      onClick={unlockAudio}
+    >
+      <p className="font-serif italic text-white/70 text-sm">tap anywhere to enable sound</p>
+    </div>
+  );
+}
+
 export default function WrappedSection({ tracks = [] }: { tracks?: SpotifyTrack[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeSlide, setActiveSlide] = useState(0);
 
-  const handleScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const idx = Math.round(el.scrollLeft / el.clientWidth);
-    setActiveSlide(idx);
-  }, []);
-
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const idx = Array.from(container.children).indexOf(entry.target);
+            if (idx !== -1) setActiveSlide(idx);
+          }
+        });
+      },
+      { root: container, threshold: 0.6 }
+    );
+
+    Array.from(container.children).forEach(child => observer.observe(child));
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <AudioProvider>
+      <AudioOverlay />
       <MuteToggle />
       <div className="relative">
         <div ref={scrollRef} className="wrapped-scroll" aria-label="One Year — Wrapped">

@@ -248,22 +248,30 @@ const getToken = async () => {
   return data.access_token;
 };
 
+const getTrackPreviewUrl = async (title: string, artist: string, token: string) => {
+  const cleanTitle = title.replace(/\(feat\..*?\)/gi, '').replace(/\(with.*?\)/gi, '').trim();
+  const query = encodeURIComponent(`${cleanTitle} ${artist.split(',')[0].trim()}`);
+  
+  const res = await fetch(
+    `https://api.spotify.com/v1/search?q=${query}&type=track&limit=5`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  const data = await res.json();
+  
+  console.log(`Searching: "${cleanTitle}" → found:`, data.tracks?.items?.[0]?.name, '| preview:', data.tracks?.items?.[0]?.preview_url);
+  
+  const trackWithPreview = data.tracks?.items?.find((t: any) => t.preview_url);
+  return trackWithPreview?.preview_url ?? null;
+};
+
 export async function fetchPlaylistTracks(playlistId: string): Promise<SpotifyTrack[]> {
   try {
     const token = await getToken();
     const enrichedTracks = await Promise.all(
       PLAYLIST_TRACKS.map(async (track) => {
         if (!track.title || track.title === "—") return track;
-        
         try {
-          const query = encodeURIComponent(`track:${track.title} artist:${track.artist.split(",")[0]}`);
-          const res = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          const data = await res.json();
-          const previewUrl = data?.tracks?.items?.[0]?.preview_url;
+          const previewUrl = await getTrackPreviewUrl(track.title, track.artist, token);
           return { ...track, previewUrl };
         } catch (e) {
           return track;
