@@ -241,8 +241,7 @@ const getToken = async () => {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': 'Basic ' + Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')
     },
-    body: 'grant_type=client_credentials',
-    cache: 'no-store'
+    body: 'grant_type=client_credentials'
   });
   if (!res.ok) throw new Error("Failed to fetch Spotify token");
   const data = await res.json();
