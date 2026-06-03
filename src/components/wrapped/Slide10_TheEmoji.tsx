@@ -13,11 +13,11 @@ const item = {
   show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
 };
 
-const topEmoji = weekTopEmojis[0]; // 😭, 37 times
+const topEmoji = weekTopEmojis[0];
 
 export default function Slide10_TheEmoji() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ivory px-6">
+    <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div
         className="flex flex-col items-center gap-7 text-center"
         variants={container}
@@ -25,11 +25,10 @@ export default function Slide10_TheEmoji() {
         whileInView="show"
         viewport={{ once: true, margin: "-100px" }}
       >
-        <motion.p variants={item} className="font-sans text-xs uppercase tracking-[0.25em] text-faded-brown">
+        <motion.p variants={item} className="font-sans text-xs uppercase tracking-[0.25em] text-sp-green">
           Most Used This Week
         </motion.p>
 
-        {/* Emoji — system font rendering, not serif */}
         <motion.div
           variants={item}
           className="leading-none select-none"
@@ -39,7 +38,7 @@ export default function Slide10_TheEmoji() {
           {topEmoji.emoji}
         </motion.div>
 
-        <motion.p variants={item} className="font-serif italic text-sm text-faded-brown tracking-wide">
+        <motion.p variants={item} className="font-serif italic text-sm text-sp-muted tracking-wide">
           {topEmoji.count} times. it means everything and nothing.
         </motion.p>
       </motion.div>

@@ -15,7 +15,7 @@ const item = {
 
 export default function Slide11_TheHearts() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ivory px-6">
+    <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div
         className="flex flex-col items-center gap-7 text-center"
         variants={container}
@@ -23,19 +23,19 @@ export default function Slide11_TheHearts() {
         whileInView="show"
         viewport={{ once: true, margin: "-100px" }}
       >
-        <motion.p variants={item} className="font-sans text-xs uppercase tracking-[0.25em] text-faded-brown">
+        <motion.p variants={item} className="font-sans text-xs uppercase tracking-[0.25em] text-sp-green">
           Times She Reacted ❤
         </motion.p>
 
         <motion.h2
           variants={item}
-          className="font-serif italic font-normal text-ink leading-none"
+          className="font-serif italic font-normal text-sp-white leading-none"
           style={{ fontSize: "clamp(4.5rem, 12vw, 9rem)" }}
         >
           {weekHeartReactions}
         </motion.h2>
 
-        <motion.p variants={item} className="font-serif italic text-sm text-faded-brown tracking-wide max-w-xs">
+        <motion.p variants={item} className="font-serif italic text-sm text-sp-muted tracking-wide max-w-xs">
           she didn't have to say anything else.
         </motion.p>
       </motion.div>

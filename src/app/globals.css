@@ -22,6 +22,14 @@
   --color-brown-light: #C4B5A5;
   --color-ink: #2C2C2C;
 
+  /* Spotify / Wrapped palette */
+  --color-sp-dark: #121212;
+  --color-sp-card: #282828;
+  --color-sp-green: #1DB954;
+  --color-sp-white: #FFFFFF;
+  --color-sp-muted: #B3B3B3;
+  --color-sp-dim: #535353;
+
   /* Custom typographic scale */
   --font-size-hero: clamp(3rem, 8vw, 7rem);
   --font-size-chapter: clamp(2rem, 5vw, 4rem);
@@ -240,4 +248,49 @@
   );
   background-size: 200% 100%;
   animation: polaroid-shimmer 2s ease-in-out infinite;
+}
+
+/* ─── Wrapped horizontal scroll ─── */
+.wrapped-scroll {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.wrapped-scroll::-webkit-scrollbar {
+  display: none;
+}
+.wrapped-slide {
+  flex-shrink: 0;
+  width: 100vw;
+  height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Nav dots */
+.wrapped-dots {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 50;
+  pointer-events: none;
+}
+.wrapped-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #535353;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+.wrapped-dot--active {
+  background: #1DB954;
+  transform: scale(1.4);
 }

@@ -15,7 +15,7 @@ const item = {
 
 export default function Slide08_ThePeakHour() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ivory px-6">
+    <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div
         className="flex flex-col items-center gap-7 text-center"
         variants={container}
@@ -23,24 +23,23 @@ export default function Slide08_ThePeakHour() {
         whileInView="show"
         viewport={{ once: true, margin: "-100px" }}
       >
-        <motion.p variants={item} className="font-sans text-xs uppercase tracking-[0.25em] text-faded-brown">
+        <motion.p variants={item} className="font-sans text-xs uppercase tracking-[0.25em] text-sp-green">
           This Week's Hour
         </motion.p>
 
         <motion.h2
           variants={item}
-          className="font-serif italic font-normal text-ink leading-none"
+          className="font-serif italic font-normal text-sp-white leading-none"
           style={{ fontSize: "clamp(4.5rem, 12vw, 9rem)" }}
         >
           {weekPeakHour}
         </motion.h2>
 
-        <motion.p variants={item} className="font-serif italic text-sm text-faded-brown tracking-wide">
+        <motion.p variants={item} className="font-serif italic text-sm text-sp-muted tracking-wide">
           every evening, without fail.
         </motion.p>
 
-        {/* Subtle note */}
-        <motion.p variants={item} className="font-sans text-xs text-faded-brown/55 tracking-wide">
+        <motion.p variants={item} className="font-sans text-xs text-sp-dim tracking-wide">
           {weekPeakHourCount} messages in a single hour.
         </motion.p>
       </motion.div>

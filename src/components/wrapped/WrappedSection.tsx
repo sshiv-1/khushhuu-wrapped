@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState, useEffect, useCallback } from "react";
 import Slide01_TheYear from "./Slide01_TheYear";
 import Slide02_TheMessages from "./Slide02_TheMessages";
 import Slide03_TheReels from "./Slide03_TheReels";
@@ -16,29 +17,60 @@ import Slide13_TheTransition from "./Slide13_TheTransition";
 import Slide14_ThePlaylist from "./Slide14_ThePlaylist";
 import SpotifyButton from "./SpotifyButton";
 
+const TOTAL_SLIDES = 15; // 14 slides + spotify button
+
 export default function WrappedSection() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const idx = Math.round(el.scrollLeft / el.clientWidth);
+    setActiveSlide(idx);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
   return (
-    <section aria-label="One Year — Wrapped">
-      {/* Part One: The Year */}
-      <Slide01_TheYear />
-      <Slide02_TheMessages />
-      <Slide03_TheReels />
-      <Slide04_TheHour />
+    <div className="relative">
+      <div ref={scrollRef} className="wrapped-scroll" aria-label="One Year — Wrapped">
+        {/* Part One: The Year */}
+        <Slide01_TheYear />
+        <Slide02_TheMessages />
+        <Slide03_TheReels />
+        <Slide04_TheHour />
 
-      {/* Part Two: The Week */}
-      <Slide05_TheWeekBegins />
-      <Slide06_TheWeekCount />
-      <Slide07_TheSplit />
-      <Slide08_ThePeakHour />
-      <Slide09_TheReelsWeek />
-      <Slide10_TheEmoji />
-      <Slide11_TheHearts />
-      <Slide12_TheReelThatSaidIt />
+        {/* Part Two: The Week */}
+        <Slide05_TheWeekBegins />
+        <Slide06_TheWeekCount />
+        <Slide07_TheSplit />
+        <Slide08_ThePeakHour />
+        <Slide09_TheReelsWeek />
+        <Slide10_TheEmoji />
+        <Slide11_TheHearts />
+        <Slide12_TheReelThatSaidIt />
 
-      {/* Part Three: The Music */}
-      <Slide13_TheTransition />
-      <Slide14_ThePlaylist />
-      <SpotifyButton />
-    </section>
+        {/* Part Three: The Music */}
+        <Slide13_TheTransition />
+        <Slide14_ThePlaylist />
+        <SpotifyButton />
+      </div>
+
+      {/* Navigation dots */}
+      <div className="wrapped-dots" aria-hidden>
+        {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
+          <div
+            key={i}
+            className={`wrapped-dot ${activeSlide === i ? "wrapped-dot--active" : ""}`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

@@ -5,12 +5,12 @@ import { luvLuvLuvTracks } from "@/lib/spotify";
 
 export default function Slide14_ThePlaylist() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-ivory px-6 py-28">
+    <div className="wrapped-slide bg-sp-dark px-6 py-28 overflow-y-auto">
       <div className="w-full max-w-md mx-auto">
 
         {/* Playlist label */}
         <motion.p
-          className="font-sans text-xs uppercase tracking-[0.25em] text-faded-brown text-center mb-14"
+          className="font-sans text-xs uppercase tracking-[0.25em] text-sp-green text-center mb-14"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -24,7 +24,7 @@ export default function Slide14_ThePlaylist() {
           {luvLuvLuvTracks.map((track, i) => (
             <motion.div
               key={`track-${track.order}`}
-              className="flex items-baseline justify-between gap-6 py-[0.9rem] border-b border-warm/50 last:border-b-0"
+              className="flex items-baseline justify-between gap-6 py-[0.9rem] border-b border-sp-dim/40 last:border-b-0"
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-30px" }}
@@ -34,19 +34,19 @@ export default function Slide14_ThePlaylist() {
                 ease: "easeOut" as const,
               }}
             >
-              <span className="font-serif italic text-[0.95rem] text-ink leading-snug">
+              <span className="font-serif italic text-[0.95rem] text-sp-white leading-snug">
                 {track.title}
               </span>
-              <span className="font-sans text-[0.7rem] text-faded-brown shrink-0 text-right max-w-[40%]">
+              <span className="font-sans text-[0.7rem] text-sp-muted shrink-0 text-right max-w-[40%]">
                 {track.artist}
               </span>
             </motion.div>
           ))}
         </div>
 
-        {/* Closing runtime — the last thing on the page */}
+        {/* Closing runtime */}
         <motion.p
-          className="font-serif italic text-xs text-faded-brown/50 text-center mt-14"
+          className="font-serif italic text-xs text-sp-dim text-center mt-14"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
