@@ -4,12 +4,10 @@ import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import { motion, useInView } from "framer-motion";
 
-// Dynamic import — Leaflet needs window
 const MapContent = dynamic(() => import("./MapContent"), { ssr: false });
 
-// Haversine
-const LAT2 = 26.9124;
-const LON2 = 75.7873;
+const BATHINDA_LAT = 30.2110;
+const BATHINDA_LON = 74.9455;
 
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -54,21 +52,45 @@ export default function Slide_TheDistance() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   
-  const [myLocation, setMyLocation] = useState<[number, number] | null>(null);
+  const [herLocation, setHerLocation] = useState<[number, number] | null>(null);
+  const [routeCoords, setRouteCoords] = useState<[number, number][] | null>(null);
+  const [distance, setDistance] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setMyLocation([pos.coords.latitude, pos.coords.longitude]),
-        () => setMyLocation([31.3260, 75.5762]) // fallback to Jalandhar if denied/failed
+        (pos) => setHerLocation([pos.coords.latitude, pos.coords.longitude]),
+        () => setHerLocation([26.9124, 75.7873]) // fallback to Jaipur
       );
     } else {
-      setMyLocation([31.3260, 75.5762]);
+      setHerLocation([26.9124, 75.7873]);
     }
   }, []);
 
-  const distance = myLocation ? haversine(myLocation[0], myLocation[1], LAT2, LON2) : null;
-  const displayDistance = useCountUp(distance, 1200, isInView);
+  useEffect(() => {
+    if (herLocation) {
+      const fallback = () => {
+        setDistance(haversine(BATHINDA_LAT, BATHINDA_LON, herLocation[0], herLocation[1]));
+        setRouteCoords([[BATHINDA_LAT, BATHINDA_LON], herLocation]);
+      };
+
+      fetch(`https://router.project-osrm.org/route/v1/driving/${BATHINDA_LON},${BATHINDA_LAT};${herLocation[1]},${herLocation[0]}?overview=full&geometries=geojson`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.routes?.[0]) {
+            const route = data.routes[0];
+            setDistance(Math.round(route.distance / 1000));
+            const coords = route.geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+            setRouteCoords(coords);
+          } else {
+            fallback();
+          }
+        })
+        .catch(fallback);
+    }
+  }, [herLocation]);
+
+  const displayDistance = useCountUp(distance, 1200, isInView && distance !== null);
 
   return (
     <div className="wrapped-slide bg-sp-dark flex-col !gap-0" ref={ref}>
@@ -79,7 +101,7 @@ export default function Slide_TheDistance() {
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 1, ease: "easeOut" as const }}
       >
-        <MapContent myLocation={myLocation} />
+        <MapContent herLocation={herLocation} routeCoords={routeCoords} />
       </motion.div>
 
       {/* Text — bottom half */}
@@ -98,7 +120,11 @@ export default function Slide_TheDistance() {
           className="font-serif italic font-normal text-sp-white leading-none"
           style={{ fontSize: "clamp(3.5rem, 10vw, 7rem)" }}
         >
-          {myLocation ? `${displayDistance} km` : <span className="text-4xl text-sp-muted">locating you...</span>}
+          {distance !== null ? (
+            `${displayDistance} km`
+          ) : (
+            <span className="text-3xl italic text-sp-muted font-serif">finding you...</span>
+          )}
         </motion.h2>
 
         <motion.p variants={fadeUp} className="font-serif italic text-sm text-sp-white tracking-wide">
@@ -106,10 +132,10 @@ export default function Slide_TheDistance() {
         </motion.p>
 
         <motion.div variants={fadeUp} className="flex items-center gap-12 mt-2">
+          <span className="font-sans text-xs text-sp-muted tracking-wide">Bathinda</span>
           <span className="font-sans text-xs text-sp-muted tracking-wide">
-            {myLocation ? "your location" : ""}
+            {herLocation ? "your location" : ""}
           </span>
-          <span className="font-sans text-xs text-sp-muted tracking-wide">Jaipur</span>
         </motion.div>
       </motion.div>
     </div>

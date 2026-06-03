@@ -1,32 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 
-const JAIPUR: [number, number] = [26.9124, 75.7873];
+const BATHINDA: [number, number] = [30.2110, 74.9455];
 
-function FitBounds({ myLocation }: { myLocation: [number, number] }) {
+function FitBounds({ herLocation }: { herLocation: [number, number] }) {
   const map = useMap();
   
   useEffect(() => {
-    if (myLocation) {
-      const bounds = L.latLngBounds([myLocation, JAIPUR]);
+    if (herLocation) {
+      const bounds = L.latLngBounds([BATHINDA, herLocation]);
       map.fitBounds(bounds, { padding: [50, 50], animate: true, duration: 1 });
     }
-  }, [map, myLocation]);
+  }, [map, herLocation]);
 
   return null;
 }
 
-export default function MapContent({ myLocation }: { myLocation: [number, number] | null }) {
-  // Center fallback or map center
-  const center: [number, number] = myLocation 
-    ? [ (myLocation[0] + JAIPUR[0]) / 2, (myLocation[1] + JAIPUR[1]) / 2 ]
-    : [26.9124, 75.7873]; // default around Jaipur if loading
+export default function MapContent({ 
+  herLocation, 
+  routeCoords 
+}: { 
+  herLocation: [number, number] | null;
+  routeCoords: [number, number][] | null;
+}) {
+  const center: [number, number] = herLocation 
+    ? [ (BATHINDA[0] + herLocation[0]) / 2, (BATHINDA[1] + herLocation[1]) / 2 ]
+    : BATHINDA;
 
   return (
     <MapContainer
@@ -44,50 +49,53 @@ export default function MapContent({ myLocation }: { myLocation: [number, number
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
       />
 
-      {myLocation && (
+      {herLocation && (
         <>
-          <FitBounds myLocation={myLocation} />
+          <FitBounds herLocation={herLocation} />
           
-          <Polyline
-            positions={[myLocation, JAIPUR]}
-            pathOptions={{
-              color: "#1DB954",
-              weight: 2,
-              opacity: 0.8,
-              dashArray: "8, 8",
-            }}
-          />
+          {routeCoords && (
+            <Polyline
+              positions={routeCoords}
+              pathOptions={{
+                color: "#1DB954",
+                weight: 2,
+                opacity: 0.8,
+                dashArray: "8, 8",
+              }}
+            />
+          )}
 
+          {/* "Her" — browser geolocation */}
           <CircleMarker
-            center={myLocation}
+            center={herLocation}
             radius={6}
             pathOptions={{ color: "#1DB954", fillColor: "#1DB954", fillOpacity: 1, weight: 0 }}
           >
             <Tooltip
-              direction="top"
-              offset={[0, -10]}
+              direction="bottom"
+              offset={[0, 10]}
               permanent
               className="map-label"
             >
-              your current location
+              your location
             </Tooltip>
           </CircleMarker>
         </>
       )}
 
-      {/* Jaipur — "her" */}
+      {/* Bathinda — "me" */}
       <CircleMarker
-        center={JAIPUR}
+        center={BATHINDA}
         radius={6}
         pathOptions={{ color: "#1DB954", fillColor: "#1DB954", fillOpacity: 1, weight: 0 }}
       >
         <Tooltip
-          direction="bottom"
-          offset={[0, 10]}
+          direction="top"
+          offset={[0, -10]}
           permanent
           className="map-label"
         >
-          Jaipur, Rajasthan
+          Bathinda, Punjab
         </Tooltip>
       </CircleMarker>
     </MapContainer>
