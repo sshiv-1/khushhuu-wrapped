@@ -50,7 +50,7 @@ export default function Slide14_ThePlaylist() {
           }}
         >
           <img
-            src="/playlist-cover.jpg"
+            src="/playlist-cover.jpeg"
             alt="luv luv luv playlist cover"
             className="w-full h-full object-cover"
             draggable={false}
