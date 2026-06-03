@@ -6,7 +6,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 // Fix Leaflet default icon paths (not needed for CircleMarker but just in case)
-delete (L.Icon.Default.prototype as Record<string, unknown>)._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 
 const JALANDHAR: [number, number] = [31.326, 75.5762];
 const JAIPUR: [number, number] = [26.9124, 75.7873];
