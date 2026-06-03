@@ -5,6 +5,7 @@ import Slide01_TheYear from "./Slide01_TheYear";
 import Slide02_TheMessages from "./Slide02_TheMessages";
 import Slide03_TheReels from "./Slide03_TheReels";
 import Slide04_TheHour from "./Slide04_TheHour";
+import Slide_TheDistance from "./Slide_TheDistance";
 import Slide05_TheWeekBegins from "./Slide05_TheWeekBegins";
 import Slide06_TheWeekCount from "./Slide06_TheWeekCount";
 import Slide07_TheSplit from "./Slide07_TheSplit";
@@ -16,7 +17,7 @@ import Slide12_TheReelThatSaidIt from "./Slide12_TheReelThatSaidIt";
 import Slide13_TheTransition from "./Slide13_TheTransition";
 import Slide14_ThePlaylist from "./Slide14_ThePlaylist";
 
-const TOTAL_SLIDES = 14;
+const TOTAL_SLIDES = 15;
 
 export default function WrappedSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -46,6 +47,7 @@ export default function WrappedSection() {
         <Slide04_TheHour />
 
         {/* Part Two: The Week */}
+        <Slide_TheDistance />
         <Slide05_TheWeekBegins />
         <Slide06_TheWeekCount />
         <Slide07_TheSplit />

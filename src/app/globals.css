@@ -294,3 +294,23 @@
   background: #1DB954;
   transform: scale(1.4);
 }
+
+/* ─── Leaflet Map Overrides ─── */
+.leaflet-container {
+  background-color: #121212 !important;
+  font-family: var(--font-sans) !important;
+}
+.map-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #B3B3B3 !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  text-transform: lowercase !important;
+  letter-spacing: 0.1em !important;
+  padding: 0 !important;
+}
+.map-label::before {
+  display: none !important;
+}
