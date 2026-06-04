@@ -204,8 +204,8 @@ export default function Slide_TheNicknames() {
         animate={{ opacity: isJaanu ? 0 : 1, y: isJaanu ? -20 : 0 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="font-sans text-sm uppercase tracking-[0.25em] text-sp-green font-semibold">
-          Things That Mean You
+        <p className="font-sans text-xs md:text-sm uppercase tracking-[0.15em] md:tracking-[0.25em] text-sp-green font-semibold">
+          Things That Started Meaning Khushee To Me
         </p>
       </motion.div>
 
@@ -306,12 +306,15 @@ export default function Slide_TheNicknames() {
       <AnimatePresence>
         {activeIndex < JAANU_INDEX && (
           <motion.div
-            className="pb-8 pt-2 flex justify-center"
+            className="pb-8 pt-2 flex flex-col items-center gap-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
+            <span className="font-sans text-[10px] uppercase tracking-widest text-sp-muted">
+              swipe down
+            </span>
             <motion.svg
               width="24"
               height="24"
