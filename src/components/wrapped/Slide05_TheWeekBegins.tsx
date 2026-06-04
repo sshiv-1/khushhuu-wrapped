@@ -1,10 +1,8 @@
 "use client";
 
-import { useSlideAudio } from "@/hooks/useSlideAudio";
 import { motion } from "framer-motion";
 
-export default function Slide05_TheWeekBegins({ isActive = false, previewUrl }: { isActive?: boolean, previewUrl?: string }) {
-  useSlideAudio(previewUrl, isActive);
+export default function Slide05_TheWeekBegins() {
   return (
     <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div

@@ -10,9 +10,10 @@ export interface SpotifyTrack {
   album: string;
   duration: string; // mm:ss
   order: number;
-  previewUrl?: string;
 }
 
+// "luv luv luv" — 24 tracks — 1 hr 22 min
+// Tracks 10 and 11 are TODO placeholders.
 const PLAYLIST_TRACKS: SpotifyTrack[] = [
   {
     title: "Get You (feat. Kali Uchis)",
@@ -95,6 +96,7 @@ const PLAYLIST_TRACKS: SpotifyTrack[] = [
     duration: "2:48",
     order: 9,
   },
+  // TODO: fill in track 10
   {
     title: "—",
     artist: "—",
@@ -104,6 +106,7 @@ const PLAYLIST_TRACKS: SpotifyTrack[] = [
     duration: "",
     order: 10,
   },
+  // TODO: fill in track 11
   {
     title: "—",
     artist: "—",
@@ -232,55 +235,10 @@ const PLAYLIST_TRACKS: SpotifyTrack[] = [
   },
 ];
 
+// Direct export for components that need the data synchronously (no async)
 export const luvLuvLuvTracks: SpotifyTrack[] = PLAYLIST_TRACKS;
 
-const getToken = async () => {
-  const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')
-    },
-    body: 'grant_type=client_credentials'
-  });
-  if (!res.ok) throw new Error("Failed to fetch Spotify token");
-  const data = await res.json();
-  return data.access_token;
-};
-
-const getTrackPreviewUrl = async (title: string, artist: string, token: string) => {
-  const cleanTitle = title.replace(/\(feat\..*?\)/gi, '').replace(/\(with.*?\)/gi, '').trim();
-  const query = encodeURIComponent(`${cleanTitle} ${artist.split(',')[0].trim()}`);
-  
-  const res = await fetch(
-    `https://api.spotify.com/v1/search?q=${query}&type=track&limit=5`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  const data = await res.json();
-  
-  console.log(`Searching: "${cleanTitle}" → found:`, data.tracks?.items?.[0]?.name, '| preview:', data.tracks?.items?.[0]?.preview_url);
-  
-  const trackWithPreview = data.tracks?.items?.find((t: any) => t.preview_url);
-  return trackWithPreview?.preview_url ?? null;
-};
-
 export async function fetchPlaylistTracks(playlistId: string): Promise<SpotifyTrack[]> {
-  try {
-    const token = await getToken();
-    const enrichedTracks = await Promise.all(
-      PLAYLIST_TRACKS.map(async (track) => {
-        if (!track.title || track.title === "—") return track;
-        try {
-          const previewUrl = await getTrackPreviewUrl(track.title, track.artist, token);
-          return { ...track, previewUrl };
-        } catch (e) {
-          return track;
-        }
-      })
-    );
-    return enrichedTracks;
-  } catch (error) {
-    console.error("Failed to fetch Spotify previews", error);
-    return PLAYLIST_TRACKS;
-  }
+  // Returns the real "luv luv luv" playlist. Static — no API call needed.
+  return PLAYLIST_TRACKS;
 }

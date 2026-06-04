@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import { useSlideAudio } from "@/hooks/useSlideAudio";
 import { motion, useInView } from "framer-motion";
 
 const MapContent = dynamic(() => import("./MapContent"), { ssr: false });
@@ -49,8 +48,7 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } },
 };
 
-export default function Slide_TheDistance({ isActive = false, previewUrl }: { isActive?: boolean, previewUrl?: string }) {
-  useSlideAudio(previewUrl, isActive);
+export default function Slide_TheDistance() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   

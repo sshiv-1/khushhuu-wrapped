@@ -1,6 +1,5 @@
 "use client";
 
-import { useSlideAudio } from "@/hooks/useSlideAudio";
 import { motion } from "framer-motion";
 
 const container = {
@@ -13,8 +12,7 @@ const item = {
   show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
 };
 
-export default function Slide02_TheMessages({ isActive = false, previewUrl }: { isActive?: boolean, previewUrl?: string }) {
-  useSlideAudio(previewUrl, isActive);
+export default function Slide02_TheMessages() {
   return (
     <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div

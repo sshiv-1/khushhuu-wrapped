@@ -1,6 +1,5 @@
 "use client";
 
-import { useSlideAudio } from "@/hooks/useSlideAudio";
 import { motion } from "framer-motion";
 import { weekTopEmojis } from "@/data/weekData";
 
@@ -16,8 +15,7 @@ const item = {
 
 const topEmoji = weekTopEmojis[0];
 
-export default function Slide10_TheEmoji({ isActive = false, previewUrl }: { isActive?: boolean, previewUrl?: string }) {
-  useSlideAudio(previewUrl, isActive);
+export default function Slide10_TheEmoji() {
   return (
     <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div
