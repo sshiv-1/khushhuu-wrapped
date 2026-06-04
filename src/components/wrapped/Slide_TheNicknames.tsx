@@ -36,8 +36,6 @@ export default function Slide_TheNicknames() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const stopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wheelLock = useRef(false);
   const touchStartY = useRef(0);
   const isJaanu = activeIndex === JAANU_INDEX;
@@ -54,7 +52,15 @@ export default function Slide_TheNicknames() {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  // Wheel handler with debounce to prevent rapid scrolling
+  // Helper: scroll parent horizontal container by one slide
+  const scrollParent = useCallback((direction: 1 | -1) => {
+    const parent = containerRef.current?.closest("[data-horizontal-scroll]") as HTMLElement | null;
+    if (parent) {
+      parent.scrollBy({ left: direction * window.innerWidth, behavior: "smooth" });
+    }
+  }, []);
+
+  // Wheel + touch handlers
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -64,13 +70,27 @@ export default function Slide_TheNicknames() {
       if (wheelLock.current) return;
 
       if (e.deltaY > 30) {
-        setActiveIndex((i) => Math.min(i + 1, NICKNAMES.length - 1));
-        wheelLock.current = true;
-        setTimeout(() => { wheelLock.current = false; }, 400);
+        if (activeIndex < NICKNAMES.length - 1) {
+          setActiveIndex((i) => Math.min(i + 1, NICKNAMES.length - 1));
+          wheelLock.current = true;
+          setTimeout(() => { wheelLock.current = false; }, 400);
+        } else {
+          // Already at JAANU — pass to parent horizontal scroll
+          scrollParent(1);
+          wheelLock.current = true;
+          setTimeout(() => { wheelLock.current = false; }, 600);
+        }
       } else if (e.deltaY < -30) {
-        setActiveIndex((i) => Math.max(i - 1, 0));
-        wheelLock.current = true;
-        setTimeout(() => { wheelLock.current = false; }, 400);
+        if (activeIndex > 0) {
+          setActiveIndex((i) => Math.max(i - 1, 0));
+          wheelLock.current = true;
+          setTimeout(() => { wheelLock.current = false; }, 400);
+        } else {
+          // Already at first name — pass to parent horizontal scroll
+          scrollParent(-1);
+          wheelLock.current = true;
+          setTimeout(() => { wheelLock.current = false; }, 600);
+        }
       }
     };
 
@@ -81,9 +101,17 @@ export default function Slide_TheNicknames() {
     const handleTouchEnd = (e: TouchEvent) => {
       const diff = touchStartY.current - e.changedTouches[0].clientY;
       if (diff > 30) {
-        setActiveIndex((i) => Math.min(i + 1, NICKNAMES.length - 1));
+        if (activeIndex < NICKNAMES.length - 1) {
+          setActiveIndex((i) => Math.min(i + 1, NICKNAMES.length - 1));
+        } else {
+          scrollParent(1);
+        }
       } else if (diff < -30) {
-        setActiveIndex((i) => Math.max(i - 1, 0));
+        if (activeIndex > 0) {
+          setActiveIndex((i) => Math.max(i - 1, 0));
+        } else {
+          scrollParent(-1);
+        }
       }
     };
 
@@ -96,69 +124,7 @@ export default function Slide_TheNicknames() {
       container.removeEventListener("touchstart", handleTouchStart);
       container.removeEventListener("touchend", handleTouchEnd);
     };
-  }, []);
-
-  // JAANU audio trigger — ONLY fires when activeIndex === 15
-  useEffect(() => {
-    if (activeIndex === JAANU_INDEX) {
-      // Kill any existing audio first
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-
-      const audio = new Audio("/jaanu.mp3");
-      audioRef.current = audio;
-
-      audio.addEventListener("canplaythrough", () => {
-        audio.currentTime = 38;
-        audio.volume = 0;
-        audio.play().catch(console.error);
-
-        // Fade in 0 → 0.7
-        const fadeIn = setInterval(() => {
-          if (audio.volume < 0.7) audio.volume = Math.min(audio.volume + 0.07, 0.7);
-          else clearInterval(fadeIn);
-        }, 100);
-
-        // Fade out starts 25.5s after play begins (stops at ~1:05 on the track)
-        stopTimeoutRef.current = setTimeout(() => {
-          const fadeOut = setInterval(() => {
-            if (audio.volume > 0.05) audio.volume = Math.max(audio.volume - 0.05, 0);
-            else { clearInterval(fadeOut); audio.pause(); }
-          }, 100);
-        }, 25500);
-      }, { once: true });
-
-      // Hard stop safety net at 65 seconds on the track
-      audio.addEventListener("timeupdate", () => {
-        if (audio.currentTime >= 65) {
-          audio.pause();
-        }
-      });
-
-    } else {
-      // User scrolled away from JAANU — stop audio immediately
-      if (audioRef.current) {
-        if (stopTimeoutRef.current) {
-          clearTimeout(stopTimeoutRef.current);
-          stopTimeoutRef.current = null;
-        }
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    }
-  }, [activeIndex]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
+  }, [activeIndex, scrollParent]);
 
   // Transform offset — center the active item
   const listOffset = containerHeight / 2 - activeIndex * ITEM_HEIGHT - ITEM_HEIGHT / 2;
@@ -291,24 +257,42 @@ export default function Slide_TheNicknames() {
                     {nick.text}
                   </span>
 
-                  {/* "that's the one." subtitle on JAANU */}
+                  {/* JAANU subtitle */}
                   <AnimatePresence>
                     {idx === JAANU_INDEX && isJaanu && (
-                      <motion.p
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.6, delay: 1 }}
-                        style={{
-                          fontFamily: "'Cormorant Garamond', serif",
-                          fontStyle: "italic",
-                          fontSize: "clamp(0.9rem, 2vw, 1.3rem)",
-                          color: "#FFFFFF",
-                          letterSpacing: "0.05em",
-                        }}
-                      >
-                        that&apos;s the one.
-                      </motion.p>
+                      <>
+                        <motion.p
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.6, delay: 1 }}
+                          style={{
+                            fontFamily: "'Cormorant Garamond', serif",
+                            fontStyle: "italic",
+                            fontSize: "clamp(0.9rem, 2vw, 1.3rem)",
+                            color: "#FFFFFF",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
+                          that&apos;s the one.
+                        </motion.p>
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.5, delay: 2 }}
+                          style={{
+                            fontFamily: "'Cormorant Garamond', serif",
+                            fontStyle: "italic",
+                            fontSize: "0.75rem",
+                            color: "#535353",
+                            letterSpacing: "0.02em",
+                            marginTop: "4px",
+                          }}
+                        >
+                          (tried my ass off to integrate &apos;THE SONG&apos; here but as usual spotify ki mkc)
+                        </motion.p>
+                      </>
                     )}
                   </AnimatePresence>
                 </div>

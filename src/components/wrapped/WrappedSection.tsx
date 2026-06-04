@@ -40,7 +40,7 @@ export default function WrappedSection() {
 
   return (
     <div className="relative">
-      <div ref={scrollRef} className="wrapped-scroll" aria-label="One Year — Wrapped">
+      <div ref={scrollRef} className="wrapped-scroll" data-horizontal-scroll="true" aria-label="One Year — Wrapped">
         {/* Part One: The Year */}
         <Slide01_TheYear />
         <Slide02_TheMessages />
