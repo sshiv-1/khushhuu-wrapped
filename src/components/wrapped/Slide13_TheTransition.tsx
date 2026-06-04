@@ -3,42 +3,67 @@
 import { motion } from "framer-motion";
 
 export default function Slide13_TheTransition() {
+  const lineVariants = {
+    hidden: { opacity: 0, y: 15, filter: "blur(4px)" },
+    show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.8, ease: "easeOut" as const } },
+  };
+
+  const ohhhVariants = {
+    hidden: { opacity: 0, y: 10, scale: 0.95, filter: "blur(12px)" },
+    show: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 2, ease: "easeOut" as const } },
+  };
+
   return (
     <div className="wrapped-slide bg-sp-dark px-6">
       <motion.div
-        className="flex flex-col items-center gap-9 text-center max-w-lg"
+        className="flex flex-col items-center justify-center gap-7 text-center max-w-2xl w-full"
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-100px" }}
-        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.2 } } }}
+        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.7 } } }}
       >
-        <motion.div
-          className="w-10 h-px bg-sp-dim"
-          variants={{
-            hidden: { opacity: 0, scaleX: 0 },
-            show: { opacity: 1, scaleX: 1, transition: { duration: 0.8, ease: "easeOut" as const } },
-          }}
-        />
-
         <motion.p
-          className="font-serif italic font-normal text-sp-white leading-tight"
-          style={{ fontSize: "clamp(1.9rem, 5vw, 3.25rem)" }}
-          variants={{
-            hidden: { opacity: 0, y: 20, scale: 0.97 },
-            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
-          }}
+          className="font-serif italic font-normal text-[#b3b3b3] leading-tight"
+          style={{ fontSize: "clamp(1.4rem, 4vw, 2.25rem)" }}
+          variants={lineVariants}
         >
-          and this is what it sounded like.
+          The way I breathe you in
         </motion.p>
 
         <motion.p
-          className="font-serif italic text-sm text-sp-muted tracking-wide"
-          variants={{
-            hidden: { opacity: 0, y: 20, scale: 0.97 },
-            show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" as const } },
-          }}
+          className="font-serif italic font-normal text-[#b3b3b3] leading-tight"
+          style={{ fontSize: "clamp(1.4rem, 4vw, 2.25rem)" }}
+          variants={lineVariants}
         >
-          24 songs. picked on purpose.
+          It&apos;s the texture of your skin
+        </motion.p>
+
+        <motion.p
+          className="font-serif italic font-normal text-[#dedede] leading-tight"
+          style={{ fontSize: "clamp(1.4rem, 4vw, 2.25rem)" }}
+          variants={lineVariants}
+        >
+          I wanna wrap my arms around you, baby
+        </motion.p>
+
+        <motion.p
+          className="font-serif italic font-normal text-[#dedede] leading-tight"
+          style={{ fontSize: "clamp(1.4rem, 4vw, 2.25rem)" }}
+          variants={lineVariants}
+        >
+          Never let you go,
+        </motion.p>
+
+        <motion.p
+          className="font-serif italic font-medium text-sp-white leading-tight break-all px-2 mt-4"
+          style={{ 
+            fontSize: "clamp(2rem, 7vw, 4rem)",
+            letterSpacing: "0.15em",
+            textShadow: "0 0 20px rgba(255,255,255,0.3)"
+          }}
+          variants={ohhhVariants}
+        >
+          OOOOOOOOOOOOOHHHHHHHHHHHHHHHHHHH
         </motion.p>
       </motion.div>
     </div>
