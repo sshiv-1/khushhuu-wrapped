@@ -14,10 +14,11 @@ import Slide09_TheReelsWeek from "./Slide09_TheReelsWeek";
 import Slide10_TheEmoji from "./Slide10_TheEmoji";
 import Slide11_TheHearts from "./Slide11_TheHearts";
 import Slide12_TheReelThatSaidIt from "./Slide12_TheReelThatSaidIt";
+import Slide_TheNicknames from "./Slide_TheNicknames";
 import Slide13_TheTransition from "./Slide13_TheTransition";
 import Slide14_ThePlaylist from "./Slide14_ThePlaylist";
 
-const TOTAL_SLIDES = 15;
+const TOTAL_SLIDES = 16;
 
 export default function WrappedSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -56,6 +57,9 @@ export default function WrappedSection() {
         <Slide10_TheEmoji />
         <Slide11_TheHearts />
         <Slide12_TheReelThatSaidIt />
+
+        {/* Nicknames */}
+        <Slide_TheNicknames />
 
         {/* Part Three: The Music */}
         <Slide13_TheTransition />
