@@ -12,12 +12,12 @@ interface Nickname {
 
 const NICKNAMES: Nickname[] = [
   { text: "khushuu", font: "'Great Vibes', cursive" },
-  { text: "MS KHUSHI SAINI", font: "'Special Elite', cursive" },
-  { text: "MS JAGRITI KI HG", font: "'Yatra One', cursive" },
+  { text: "MS KHUSHI\nSAINI", font: "'Special Elite', cursive" },
+  { text: "MS JAGRITI\nKI HG", font: "'Yatra One', cursive" },
   { text: "sweetie", font: "'Pacifico', cursive" },
   { text: "bitch", font: "'Bebas Neue', sans-serif", short: true },
   { text: "aalu", font: "'Fredoka One', cursive", short: true },
-  { text: "aalu bukhara", font: "'Righteous', cursive" },
+  { text: "aalu\nbukhara", font: "'Righteous', cursive" },
   { text: "tiramisu", font: "'Cormorant Garamond', serif" },
   { text: "chipmunk", font: "'Boogaloo', cursive" },
   { text: "pucchu", font: "'Caveat', cursive", short: true },
@@ -168,18 +168,18 @@ export default function Slide_TheNicknames() {
 
   const getFontSize = (nick: Nickname, index: number, active: boolean): string => {
     if (index === JAANU_INDEX && isJaanu) {
-      return "clamp(8rem, 25vw, 20rem)";
+      return "clamp(4rem, 15vw, 14rem)";
     }
     if (!active) {
-      return "clamp(2rem, 8vw, 6rem)";
+      return "clamp(1rem, 4vw, 4rem)";
     }
     if (nick.short) {
-      return "clamp(6rem, 20vw, 16rem)";
+      return "clamp(3rem, 12vw, 12rem)";
     }
     if (nick.text === "mommy 😝") {
       return "clamp(1.5rem, 4vw, 2.5rem)";
     }
-    return "clamp(4rem, 15vw, 12rem)";
+    return "clamp(2rem, 8vw, 8rem)";
   };
 
   return (
@@ -245,11 +245,11 @@ export default function Slide_TheNicknames() {
                       fontStyle: nick.font.includes("Cormorant") || nick.font.includes("Playfair") ? "italic" : "normal",
                       fontWeight: nick.font.includes("Playfair") ? 700 : 400,
                       color: nick.color || "#FFFFFF",
-                      whiteSpace: "nowrap",
+                      whiteSpace: "pre-line",
                       display: "block",
                       textAlign: "center",
                       letterSpacing: nick.font.includes("Bebas") ? "0.15em" : "0.02em",
-                      lineHeight: 1,
+                      lineHeight: 1.1,
                       animation: idx === JAANU_INDEX && isJaanu ? "jaanuPulse 2s ease-in-out infinite" : "none",
                       transition: "font-size 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                     }}
