@@ -7,7 +7,7 @@ interface Nickname {
   text: string;
   font: string;
   color?: string;
-  larger?: boolean;
+  short?: boolean;
 }
 
 const NICKNAMES: Nickname[] = [
@@ -15,60 +15,54 @@ const NICKNAMES: Nickname[] = [
   { text: "MS KHUSHI SAINI", font: "'Special Elite', cursive" },
   { text: "MS JAGRITI KI HG", font: "'Yatra One', cursive" },
   { text: "sweetie", font: "'Pacifico', cursive" },
-  { text: "bitch", font: "'Bebas Neue', sans-serif" },
-  { text: "aalu", font: "'Fredoka One', cursive" },
+  { text: "bitch", font: "'Bebas Neue', sans-serif", short: true },
+  { text: "aalu", font: "'Fredoka One', cursive", short: true },
   { text: "aalu bukhara", font: "'Righteous', cursive" },
   { text: "tiramisu", font: "'Cormorant Garamond', serif" },
   { text: "chipmunk", font: "'Boogaloo', cursive" },
-  { text: "pucchu", font: "'Caveat', cursive" },
-  { text: "bb", font: "'VT323', monospace" },
-  { text: "baby", font: "'Dancing Script', cursive" },
+  { text: "pucchu", font: "'Caveat', cursive", short: true },
+  { text: "bb", font: "'VT323', monospace", short: true },
+  { text: "baby", font: "'Dancing Script', cursive", short: true },
   { text: "mommy 😝", font: "'Press Start 2P', cursive" },
   { text: "khushupuchu", font: "'Satisfy', cursive" },
-  { text: "cutu", font: "'Lobster', cursive" },
-  { text: "JAANU", font: "'Playfair Display', serif", color: "#f5c842", larger: true },
+  { text: "cutu", font: "'Lobster', cursive", short: true },
+  { text: "JAANU", font: "'Playfair Display', serif", color: "#f5c842", short: true },
 ];
 
 const JAANU_INDEX = 15;
 
 export default function Slide_TheNicknames() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fadeInRef = useRef<NodeJS.Timeout | null>(null);
   const fadeOutRef = useRef<NodeJS.Timeout | null>(null);
+  const isJaanu = activeIndex === JAANU_INDEX;
 
-  // Intersection Observer to detect centered name
+  // Scroll-based active detection
+  const handleScroll = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const itemHeight = container.scrollHeight / NICKNAMES.length;
+    const idx = Math.round(container.scrollTop / itemHeight);
+    setActiveIndex(Math.min(idx, NICKNAMES.length - 1));
+  }, []);
+
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const idx = itemRefs.current.indexOf(entry.target as HTMLDivElement);
-            if (idx !== -1) setActiveIndex(idx);
-          }
-        });
-      },
-      { root: container, threshold: 0.8 }
-    );
-
-    itemRefs.current.forEach((el) => {
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  // Audio trigger on JAANU
+  // JAANU audio trigger
   useEffect(() => {
     if (activeIndex !== JAANU_INDEX) {
       // Clean up if scrolled away
       if (audioRef.current) {
         const audio = audioRef.current;
+        if (fadeInRef.current) clearInterval(fadeInRef.current);
         if (fadeOutRef.current) clearInterval(fadeOutRef.current);
         if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
         const quickFade = setInterval(() => {
@@ -77,45 +71,43 @@ export default function Slide_TheNicknames() {
           } else {
             clearInterval(quickFade);
             audio.pause();
-            audioRef.current = null;
           }
         }, 50);
+        audioRef.current = null;
       }
       return;
     }
 
-    // JAANU is active — play audio
     const audio = new Audio("/jaanu.mp3");
     audio.currentTime = 38;
     audio.volume = 0;
     audioRef.current = audio;
 
-    const fadeIn = setInterval(() => {
+    audio.play().catch(console.error);
+
+    fadeInRef.current = setInterval(() => {
       if (audio.volume < 0.7) {
         audio.volume = Math.min(audio.volume + 0.07, 0.7);
       } else {
-        clearInterval(fadeIn);
+        if (fadeInRef.current) clearInterval(fadeInRef.current);
       }
     }, 100);
 
-    audio.play().catch(console.error);
-
-    // Fade out and stop at ~1:05 (27 seconds after 0:38)
     stopTimeoutRef.current = setTimeout(() => {
       fadeOutRef.current = setInterval(() => {
         if (audio.volume > 0.05) {
-          audio.volume = Math.max(audio.volume - 0.07, 0);
+          audio.volume = Math.max(audio.volume - 0.05, 0);
         } else {
-          clearInterval(fadeOutRef.current!);
+          if (fadeOutRef.current) clearInterval(fadeOutRef.current);
           audio.pause();
         }
       }, 100);
     }, 25500);
 
     return () => {
-      clearInterval(fadeIn);
-      if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
+      if (fadeInRef.current) clearInterval(fadeInRef.current);
       if (fadeOutRef.current) clearInterval(fadeOutRef.current);
+      if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
       audio.pause();
       audioRef.current = null;
     };
@@ -123,42 +115,67 @@ export default function Slide_TheNicknames() {
 
   const getItemStyle = useCallback(
     (index: number): React.CSSProperties => {
+      if (isJaanu && index !== JAANU_INDEX) {
+        return {
+          opacity: 0,
+          transform: "scale(0.3)",
+          filter: "blur(30px)",
+          transition: "all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        };
+      }
       const diff = Math.abs(index - activeIndex);
       if (diff === 0) {
         return {
           opacity: 1,
           transform: "scale(1)",
           filter: "blur(0px)",
-          transition: "all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)",
+          transition: "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
         };
       } else if (diff === 1) {
         return {
-          opacity: 0.3,
-          transform: "scale(0.85)",
-          filter: "blur(4px)",
-          transition: "all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)",
+          opacity: 0.15,
+          transform: "scale(0.7)",
+          filter: "blur(12px)",
+          transition: "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
         };
       } else {
         return {
-          opacity: 0.1,
-          transform: "scale(0.75)",
-          filter: "blur(8px)",
-          transition: "all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)",
+          opacity: 0.05,
+          transform: "scale(0.5)",
+          filter: "blur(20px)",
+          transition: "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
         };
       }
     },
-    [activeIndex]
+    [activeIndex, isJaanu]
   );
 
+  const getFontSize = (nick: Nickname, index: number): string => {
+    if (index === JAANU_INDEX && isJaanu) {
+      return "clamp(8rem, 25vw, 20rem)";
+    }
+    if (nick.short) {
+      return "clamp(6rem, 20vw, 16rem)";
+    }
+    if (nick.text === "mommy 😝") {
+      return "clamp(1.5rem, 4vw, 2.5rem)";
+    }
+    return "clamp(4rem, 15vw, 12rem)";
+  };
+
   return (
-    <div className="wrapped-slide bg-sp-dark flex-col !gap-0 overflow-hidden">
-      {/* Header */}
+    <div
+      className="wrapped-slide flex-col !gap-0 overflow-hidden"
+      style={{
+        backgroundColor: isJaanu ? "#0a0800" : "#121212",
+        transition: "background-color 0.8s ease",
+      }}
+    >
+      {/* Header — fades away on JAANU */}
       <motion.div
         className="w-full text-center px-6 pt-14 pb-4"
-        initial={{ opacity: 0, y: 15 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.7, ease: "easeOut" as const }}
+        animate={{ opacity: isJaanu ? 0 : 1, y: isJaanu ? -20 : 0 }}
+        transition={{ duration: 0.5 }}
       >
         <p className="font-sans text-sm uppercase tracking-[0.25em] text-sp-green font-semibold">
           Things That Mean You
@@ -170,27 +187,34 @@ export default function Slide_TheNicknames() {
         ref={scrollRef}
         className="flex-1 w-full overflow-y-auto snap-y snap-mandatory"
         style={{
-          maxHeight: "70vh",
+          maxHeight: isJaanu ? "85vh" : "70vh",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
+          transition: "max-height 0.5s ease",
         }}
       >
         <style dangerouslySetInnerHTML={{ __html: `
           .nicknames-scroll::-webkit-scrollbar { display: none; }
+          @keyframes jaanuPulse {
+            0%, 100% { color: #f5c842; }
+            50% { color: #fff8e1; }
+          }
         `}} />
 
         {NICKNAMES.map((nick, idx) => (
           <div
             key={idx}
-            ref={(el) => { itemRefs.current[idx] = el; }}
             className="snap-center flex items-center justify-center nicknames-scroll"
             style={{ height: "33.333%", minHeight: "33.333%" }}
           >
-            <div style={getItemStyle(idx)}>
+            <div
+              style={getItemStyle(idx)}
+              className="flex flex-col items-center gap-4"
+            >
               <span
                 style={{
                   fontFamily: nick.font,
-                  fontSize: nick.larger ? "clamp(3rem, 8vw, 5rem)" : nick.text === "mommy 😝" ? "clamp(1rem, 3vw, 1.5rem)" : "clamp(2rem, 6vw, 3.5rem)",
+                  fontSize: getFontSize(nick, idx),
                   fontStyle: nick.font.includes("Cormorant") || nick.font.includes("Playfair") ? "italic" : "normal",
                   fontWeight: nick.font.includes("Playfair") ? 700 : 400,
                   color: nick.color || "#FFFFFF",
@@ -198,10 +222,33 @@ export default function Slide_TheNicknames() {
                   display: "block",
                   textAlign: "center",
                   letterSpacing: nick.font.includes("Bebas") ? "0.15em" : "0.02em",
+                  lineHeight: 1,
+                  animation: idx === JAANU_INDEX && isJaanu ? "jaanuPulse 2s ease-in-out infinite" : "none",
                 }}
               >
                 {nick.text}
               </span>
+
+              {/* "that's the one." subtitle on JAANU */}
+              <AnimatePresence>
+                {idx === JAANU_INDEX && isJaanu && (
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.6, delay: 1 }}
+                    style={{
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontStyle: "italic",
+                      fontSize: "clamp(0.9rem, 2vw, 1.3rem)",
+                      color: "#FFFFFF",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    that&apos;s the one.
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         ))}
