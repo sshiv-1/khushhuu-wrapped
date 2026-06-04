@@ -26,7 +26,7 @@ const NICKNAMES: Nickname[] = [
   { text: "mommy 😝", font: "'Press Start 2P', cursive" },
   { text: "khushupuchu", font: "'Satisfy', cursive" },
   { text: "cutu", font: "'Lobster', cursive", short: true },
-  { text: "JAANU", font: "'Playfair Display', serif", color: "#f5c842", short: true },
+  { text: "JAANU", font: "'Luckiest Guy', cursive", color: "#ffffff", short: true },
 ];
 
 const JAANU_INDEX = 15;
@@ -39,6 +39,59 @@ export default function Slide_TheNicknames() {
   const wheelLock = useRef(false);
   const touchStartY = useRef(0);
   const isJaanu = activeIndex === JAANU_INDEX;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const slideRef = useRef<HTMLDivElement>(null);
+  const [isActiveSlide, setIsActiveSlide] = useState(false);
+
+  // Track if this slide is horizontally active
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsActiveSlide(entry.isIntersecting);
+      },
+      { threshold: 0.5 }
+    );
+    if (slideRef.current) {
+      observer.observe(slideRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
+  // Audio Playback
+  useEffect(() => {
+    if (isActiveSlide) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+
+      const audio = new Audio('/jaanu_aqvhDr0k.mp3');
+      audio.volume = 0.7;
+      audioRef.current = audio;
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(console.error);
+      }
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+    }
+  }, [isActiveSlide]);
+
+  // Audio Cleanup on Unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   // Measure container height
   useEffect(() => {
@@ -184,6 +237,7 @@ export default function Slide_TheNicknames() {
 
   return (
     <div
+      ref={slideRef}
       className="wrapped-slide flex-col !gap-0"
       style={{
         backgroundColor: isJaanu ? "#0a0800" : "#121212",
@@ -248,10 +302,14 @@ export default function Slide_TheNicknames() {
                       whiteSpace: "pre-line",
                       display: "block",
                       textAlign: "center",
-                      letterSpacing: nick.font.includes("Bebas") ? "0.15em" : "0.02em",
+                      letterSpacing: nick.font.includes("Bebas") ? "0.15em" : nick.font.includes("Luckiest Guy") ? "0.05em" : "0.02em",
                       lineHeight: 1.1,
                       animation: idx === JAANU_INDEX && isJaanu ? "jaanuPulse 2s ease-in-out infinite" : "none",
                       transition: "font-size 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      ...(idx === JAANU_INDEX && {
+                        WebkitTextStroke: "3px #2b1d16",
+                        textShadow: "0 3px 0 #2b1d16, 0 6px 0 rgba(0,0,0,0.15)",
+                      })
                     }}
                   >
                     {nick.text}
@@ -284,14 +342,14 @@ export default function Slide_TheNicknames() {
                           style={{
                             fontFamily: "'Cormorant Garamond', serif",
                             fontStyle: "italic",
-                            fontSize: "0.75rem",
-                            color: "#535353",
-                            letterSpacing: "0.02em",
-                            marginTop: "4px",
+                            fontSize: "0.85rem",
+                            color: "#B3B3B3",
+                            marginTop: "8px",
                           }}
                         >
-                          (tried my ass off to integrate &apos;THE SONG&apos; here but as usual spotify ki mkc)
+                          No wonder the font is called Luckiest Guy.
                         </motion.p>
+
                       </>
                     )}
                   </AnimatePresence>
