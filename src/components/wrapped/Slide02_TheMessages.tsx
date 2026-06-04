@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { SlideBg } from "@/components/wrapped/SlideAssets";
 
 const container = {
   hidden: {},
@@ -14,9 +15,10 @@ const item = {
 
 export default function Slide02_TheMessages() {
   return (
-    <div className="wrapped-slide bg-sp-dark px-6">
+    <div className="wrapped-slide bg-sp-dark px-6 relative overflow-hidden">
+      <SlideBg src="/bg-squiggle.jpg" opacity={0.16} />
       <motion.div
-        className="flex flex-col items-center gap-7 text-center"
+        className="relative z-10 flex flex-col items-center gap-7 text-center"
         variants={container}
         initial="hidden"
         whileInView="show"

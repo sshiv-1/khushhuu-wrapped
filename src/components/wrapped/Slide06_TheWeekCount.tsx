@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { weekTotalMessages } from "@/data/weekData";
+import { SlideBg } from "@/components/wrapped/SlideAssets";
 
 const container = {
   hidden: {},
@@ -15,9 +16,10 @@ const item = {
 
 export default function Slide06_TheWeekCount() {
   return (
-    <div className="wrapped-slide bg-sp-dark px-6">
+    <div className="wrapped-slide bg-sp-dark px-6 relative overflow-hidden">
+      <SlideBg src="/bg-retro-arch.jpg" opacity={0.15} />
       <motion.div
-        className="flex flex-col items-center gap-7 text-center"
+        className="flex flex-col items-center gap-7 text-center relative z-10"
         variants={container}
         initial="hidden"
         whileInView="show"

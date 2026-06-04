@@ -1,12 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { SlideBg } from "@/components/wrapped/SlideAssets";
 
 export default function Slide05_TheWeekBegins() {
   return (
-    <div className="wrapped-slide bg-sp-dark px-6">
+    <div className="wrapped-slide bg-sp-dark px-6 relative overflow-hidden">
+      <SlideBg src="/bg-grid.jpg" opacity={0.12} />
       <motion.div
-        className="flex flex-col items-center gap-9 text-center max-w-lg"
+        className="relative z-10 flex flex-col items-center gap-9 text-center max-w-lg"
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-100px" }}
