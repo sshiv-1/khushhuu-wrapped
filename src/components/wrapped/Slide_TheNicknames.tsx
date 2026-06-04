@@ -30,49 +30,79 @@ const NICKNAMES: Nickname[] = [
 ];
 
 const JAANU_INDEX = 15;
+const ITEM_HEIGHT = 120;
 
 export default function Slide_TheNicknames() {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fadeInRef = useRef<NodeJS.Timeout | null>(null);
   const fadeOutRef = useRef<NodeJS.Timeout | null>(null);
+  const wheelLock = useRef(false);
+  const touchStartY = useRef(0);
   const isJaanu = activeIndex === JAANU_INDEX;
 
-  // Scroll-based active detection — find closest item to container center
-  const handleScroll = useCallback(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const children = container.querySelectorAll<HTMLDivElement>("[data-nick-idx]");
-    if (!children.length) return;
-    const containerRect = container.getBoundingClientRect();
-    const containerCenter = containerRect.top + containerRect.height / 2;
-    let closest = 0;
-    let closestDist = Infinity;
-    children.forEach((child, i) => {
-      const rect = child.getBoundingClientRect();
-      const childCenter = rect.top + rect.height / 2;
-      const dist = Math.abs(childCenter - containerCenter);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closest = i;
+  // Measure container height
+  useEffect(() => {
+    const measure = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
       }
-    });
-    setActiveIndex(closest);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, []);
 
+  // Wheel handler with debounce to prevent rapid scrolling
   useEffect(() => {
-    const container = scrollRef.current;
+    const container = containerRef.current;
     if (!container) return;
-    container.addEventListener("scroll", handleScroll, { passive: true });
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (wheelLock.current) return;
+
+      if (e.deltaY > 30) {
+        setActiveIndex((i) => Math.min(i + 1, NICKNAMES.length - 1));
+        wheelLock.current = true;
+        setTimeout(() => { wheelLock.current = false; }, 400);
+      } else if (e.deltaY < -30) {
+        setActiveIndex((i) => Math.max(i - 1, 0));
+        wheelLock.current = true;
+        setTimeout(() => { wheelLock.current = false; }, 400);
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const diff = touchStartY.current - e.changedTouches[0].clientY;
+      if (diff > 30) {
+        setActiveIndex((i) => Math.min(i + 1, NICKNAMES.length - 1));
+      } else if (diff < -30) {
+        setActiveIndex((i) => Math.max(i - 1, 0));
+      }
+    };
+
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    container.addEventListener("touchstart", handleTouchStart, { passive: true });
+    container.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      container.removeEventListener("wheel", handleWheel);
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, []);
 
   // JAANU audio trigger
   useEffect(() => {
     if (activeIndex !== JAANU_INDEX) {
-      // Clean up if scrolled away
       if (audioRef.current) {
         const audio = audioRef.current;
         if (fadeInRef.current) clearInterval(fadeInRef.current);
@@ -126,6 +156,9 @@ export default function Slide_TheNicknames() {
     };
   }, [activeIndex]);
 
+  // Transform offset — center the active item
+  const listOffset = containerHeight / 2 - activeIndex * ITEM_HEIGHT - ITEM_HEIGHT / 2;
+
   const getItemStyle = useCallback(
     (index: number): React.CSSProperties => {
       if (isJaanu && index !== JAANU_INDEX) {
@@ -163,9 +196,12 @@ export default function Slide_TheNicknames() {
     [activeIndex, isJaanu]
   );
 
-  const getFontSize = (nick: Nickname, index: number): string => {
+  const getFontSize = (nick: Nickname, index: number, active: boolean): string => {
     if (index === JAANU_INDEX && isJaanu) {
       return "clamp(8rem, 25vw, 20rem)";
+    }
+    if (!active) {
+      return "clamp(2rem, 8vw, 6rem)";
     }
     if (nick.short) {
       return "clamp(6rem, 20vw, 16rem)";
@@ -178,12 +214,20 @@ export default function Slide_TheNicknames() {
 
   return (
     <div
-      className="wrapped-slide flex-col !gap-0 overflow-hidden"
+      className="wrapped-slide flex-col !gap-0"
       style={{
         backgroundColor: isJaanu ? "#0a0800" : "#121212",
         transition: "background-color 0.8s ease",
+        overflow: "hidden",
       }}
     >
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes jaanuPulse {
+          0%, 100% { color: #f5c842; }
+          50% { color: #fff8e1; }
+        }
+      `}} />
+
       {/* Header — fades away on JAANU */}
       <motion.div
         className="w-full text-center px-6 pt-14 pb-4"
@@ -195,83 +239,79 @@ export default function Slide_TheNicknames() {
         </p>
       </motion.div>
 
-      {/* Vertical scroll snap container */}
+      {/* Controlled list container — overflow hidden, no scroll */}
       <div
-        ref={scrollRef}
-        className="flex-1 w-full overflow-y-scroll snap-y snap-mandatory"
-        style={{
-          height: isJaanu ? "85vh" : "70vh",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-          transition: "height 0.5s ease",
-        }}
+        ref={containerRef}
+        className="flex-1 w-full relative"
+        style={{ overflow: "hidden" }}
       >
-        <style dangerouslySetInnerHTML={{ __html: `
-          .nicknames-container::-webkit-scrollbar { display: none; }
-          @keyframes jaanuPulse {
-            0%, 100% { color: #f5c842; }
-            50% { color: #fff8e1; }
-          }
-        `}} />
-
-        {/* Top spacer — lets first item center */}
-        <div style={{ height: "35vh", flexShrink: 0 }} />
-
-        {NICKNAMES.map((nick, idx) => (
-          <div
-            key={idx}
-            data-nick-idx={idx}
-            className="snap-center flex items-center justify-center"
-            style={{ height: "30vh", minHeight: "30vh" }}
-          >
-            <div
-              style={getItemStyle(idx)}
-              className="flex flex-col items-center gap-4"
-            >
-              <span
+        {/* The moving list */}
+        <div
+          style={{
+            transform: `translateY(${listOffset}px)`,
+            transition: "transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          }}
+        >
+          {NICKNAMES.map((nick, idx) => {
+            const isActive = idx === activeIndex;
+            return (
+              <div
+                key={idx}
                 style={{
-                  fontFamily: nick.font,
-                  fontSize: getFontSize(nick, idx),
-                  fontStyle: nick.font.includes("Cormorant") || nick.font.includes("Playfair") ? "italic" : "normal",
-                  fontWeight: nick.font.includes("Playfair") ? 700 : 400,
-                  color: nick.color || "#FFFFFF",
-                  whiteSpace: "nowrap",
-                  display: "block",
-                  textAlign: "center",
-                  letterSpacing: nick.font.includes("Bebas") ? "0.15em" : "0.02em",
-                  lineHeight: 1,
-                  animation: idx === JAANU_INDEX && isJaanu ? "jaanuPulse 2s ease-in-out infinite" : "none",
+                  height: ITEM_HEIGHT,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                {nick.text}
-              </span>
-
-              {/* "that's the one." subtitle on JAANU */}
-              <AnimatePresence>
-                {idx === JAANU_INDEX && isJaanu && (
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.6, delay: 1 }}
+                <div
+                  style={getItemStyle(idx)}
+                  className="flex flex-col items-center gap-4"
+                >
+                  <span
                     style={{
-                      fontFamily: "'Cormorant Garamond', serif",
-                      fontStyle: "italic",
-                      fontSize: "clamp(0.9rem, 2vw, 1.3rem)",
-                      color: "#FFFFFF",
-                      letterSpacing: "0.05em",
+                      fontFamily: nick.font,
+                      fontSize: getFontSize(nick, idx, isActive),
+                      fontStyle: nick.font.includes("Cormorant") || nick.font.includes("Playfair") ? "italic" : "normal",
+                      fontWeight: nick.font.includes("Playfair") ? 700 : 400,
+                      color: nick.color || "#FFFFFF",
+                      whiteSpace: "nowrap",
+                      display: "block",
+                      textAlign: "center",
+                      letterSpacing: nick.font.includes("Bebas") ? "0.15em" : "0.02em",
+                      lineHeight: 1,
+                      animation: idx === JAANU_INDEX && isJaanu ? "jaanuPulse 2s ease-in-out infinite" : "none",
+                      transition: "font-size 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                     }}
                   >
-                    that&apos;s the one.
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        ))}
+                    {nick.text}
+                  </span>
 
-        {/* Bottom spacer — lets last item center */}
-        <div style={{ height: "35vh", flexShrink: 0 }} />
+                  {/* "that's the one." subtitle on JAANU */}
+                  <AnimatePresence>
+                    {idx === JAANU_INDEX && isJaanu && (
+                      <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.6, delay: 1 }}
+                        style={{
+                          fontFamily: "'Cormorant Garamond', serif",
+                          fontStyle: "italic",
+                          fontSize: "clamp(0.9rem, 2vw, 1.3rem)",
+                          color: "#FFFFFF",
+                          letterSpacing: "0.05em",
+                        }}
+                      >
+                        that&apos;s the one.
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Scroll indicator — disappears when JAANU is reached */}
