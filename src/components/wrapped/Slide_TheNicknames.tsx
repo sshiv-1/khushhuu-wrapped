@@ -40,13 +40,26 @@ export default function Slide_TheNicknames() {
   const fadeOutRef = useRef<NodeJS.Timeout | null>(null);
   const isJaanu = activeIndex === JAANU_INDEX;
 
-  // Scroll-based active detection
+  // Scroll-based active detection — find closest item to container center
   const handleScroll = useCallback(() => {
     const container = scrollRef.current;
     if (!container) return;
-    const itemHeight = container.scrollHeight / NICKNAMES.length;
-    const idx = Math.round(container.scrollTop / itemHeight);
-    setActiveIndex(Math.min(idx, NICKNAMES.length - 1));
+    const children = container.querySelectorAll<HTMLDivElement>("[data-nick-idx]");
+    if (!children.length) return;
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.top + containerRect.height / 2;
+    let closest = 0;
+    let closestDist = Infinity;
+    children.forEach((child, i) => {
+      const rect = child.getBoundingClientRect();
+      const childCenter = rect.top + rect.height / 2;
+      const dist = Math.abs(childCenter - containerCenter);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = i;
+      }
+    });
+    setActiveIndex(closest);
   }, []);
 
   useEffect(() => {
@@ -185,27 +198,31 @@ export default function Slide_TheNicknames() {
       {/* Vertical scroll snap container */}
       <div
         ref={scrollRef}
-        className="flex-1 w-full overflow-y-auto snap-y snap-mandatory"
+        className="flex-1 w-full overflow-y-scroll snap-y snap-mandatory"
         style={{
-          maxHeight: isJaanu ? "85vh" : "70vh",
+          height: isJaanu ? "85vh" : "70vh",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
-          transition: "max-height 0.5s ease",
+          transition: "height 0.5s ease",
         }}
       >
         <style dangerouslySetInnerHTML={{ __html: `
-          .nicknames-scroll::-webkit-scrollbar { display: none; }
+          .nicknames-container::-webkit-scrollbar { display: none; }
           @keyframes jaanuPulse {
             0%, 100% { color: #f5c842; }
             50% { color: #fff8e1; }
           }
         `}} />
 
+        {/* Top spacer — lets first item center */}
+        <div style={{ height: "35vh", flexShrink: 0 }} />
+
         {NICKNAMES.map((nick, idx) => (
           <div
             key={idx}
-            className="snap-center flex items-center justify-center nicknames-scroll"
-            style={{ height: "33.333%", minHeight: "33.333%" }}
+            data-nick-idx={idx}
+            className="snap-center flex items-center justify-center"
+            style={{ height: "30vh", minHeight: "30vh" }}
           >
             <div
               style={getItemStyle(idx)}
@@ -252,6 +269,9 @@ export default function Slide_TheNicknames() {
             </div>
           </div>
         ))}
+
+        {/* Bottom spacer — lets last item center */}
+        <div style={{ height: "35vh", flexShrink: 0 }} />
       </div>
 
       {/* Scroll indicator — disappears when JAANU is reached */}
