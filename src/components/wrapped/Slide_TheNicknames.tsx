@@ -38,8 +38,6 @@ export default function Slide_TheNicknames() {
   const [containerHeight, setContainerHeight] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const fadeInRef = useRef<NodeJS.Timeout | null>(null);
-  const fadeOutRef = useRef<NodeJS.Timeout | null>(null);
   const wheelLock = useRef(false);
   const touchStartY = useRef(0);
   const isJaanu = activeIndex === JAANU_INDEX;
@@ -100,61 +98,67 @@ export default function Slide_TheNicknames() {
     };
   }, []);
 
-  // JAANU audio trigger
+  // JAANU audio trigger — ONLY fires when activeIndex === 15
   useEffect(() => {
-    if (activeIndex !== JAANU_INDEX) {
+    if (activeIndex === JAANU_INDEX) {
+      // Kill any existing audio first
       if (audioRef.current) {
-        const audio = audioRef.current;
-        if (fadeInRef.current) clearInterval(fadeInRef.current);
-        if (fadeOutRef.current) clearInterval(fadeOutRef.current);
-        if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
-        const quickFade = setInterval(() => {
-          if (audio.volume > 0.05) {
-            audio.volume = Math.max(audio.volume - 0.1, 0);
-          } else {
-            clearInterval(quickFade);
-            audio.pause();
-          }
-        }, 50);
+        audioRef.current.pause();
         audioRef.current = null;
       }
-      return;
-    }
 
-    const audio = new Audio("/jaanu.mp3");
-    audio.currentTime = 38;
-    audio.volume = 0;
-    audioRef.current = audio;
+      const audio = new Audio("/jaanu.mp3");
+      audioRef.current = audio;
 
-    audio.play().catch(console.error);
+      audio.addEventListener("canplaythrough", () => {
+        audio.currentTime = 38;
+        audio.volume = 0;
+        audio.play().catch(console.error);
 
-    fadeInRef.current = setInterval(() => {
-      if (audio.volume < 0.7) {
-        audio.volume = Math.min(audio.volume + 0.07, 0.7);
-      } else {
-        if (fadeInRef.current) clearInterval(fadeInRef.current);
-      }
-    }, 100);
+        // Fade in 0 → 0.7
+        const fadeIn = setInterval(() => {
+          if (audio.volume < 0.7) audio.volume = Math.min(audio.volume + 0.07, 0.7);
+          else clearInterval(fadeIn);
+        }, 100);
 
-    stopTimeoutRef.current = setTimeout(() => {
-      fadeOutRef.current = setInterval(() => {
-        if (audio.volume > 0.05) {
-          audio.volume = Math.max(audio.volume - 0.05, 0);
-        } else {
-          if (fadeOutRef.current) clearInterval(fadeOutRef.current);
+        // Fade out starts 25.5s after play begins (stops at ~1:05 on the track)
+        stopTimeoutRef.current = setTimeout(() => {
+          const fadeOut = setInterval(() => {
+            if (audio.volume > 0.05) audio.volume = Math.max(audio.volume - 0.05, 0);
+            else { clearInterval(fadeOut); audio.pause(); }
+          }, 100);
+        }, 25500);
+      }, { once: true });
+
+      // Hard stop safety net at 65 seconds on the track
+      audio.addEventListener("timeupdate", () => {
+        if (audio.currentTime >= 65) {
           audio.pause();
         }
-      }, 100);
-    }, 25500);
+      });
 
-    return () => {
-      if (fadeInRef.current) clearInterval(fadeInRef.current);
-      if (fadeOutRef.current) clearInterval(fadeOutRef.current);
-      if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
-      audio.pause();
-      audioRef.current = null;
-    };
+    } else {
+      // User scrolled away from JAANU — stop audio immediately
+      if (audioRef.current) {
+        if (stopTimeoutRef.current) {
+          clearTimeout(stopTimeoutRef.current);
+          stopTimeoutRef.current = null;
+        }
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    }
   }, [activeIndex]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   // Transform offset — center the active item
   const listOffset = containerHeight / 2 - activeIndex * ITEM_HEIGHT - ITEM_HEIGHT / 2;
