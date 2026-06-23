@@ -39,59 +39,7 @@ export default function Slide_TheNicknames() {
   const wheelLock = useRef(false);
   const touchStartY = useRef(0);
   const isJaanu = activeIndex === JAANU_INDEX;
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const slideRef = useRef<HTMLDivElement>(null);
-  const [isActiveSlide, setIsActiveSlide] = useState(false);
 
-  // Track if this slide is horizontally active
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsActiveSlide(entry.isIntersecting);
-      },
-      { threshold: 0.5 }
-    );
-    if (slideRef.current) {
-      observer.observe(slideRef.current);
-    }
-    return () => observer.disconnect();
-  }, []);
-
-  // Audio Playback
-  useEffect(() => {
-    if (isActiveSlide) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-
-      const audio = new Audio('/jaanu_aqvhDr0k.mp3');
-      audio.volume = 0.7;
-      audioRef.current = audio;
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(console.error);
-      }
-    } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current = null;
-      }
-    }
-  }, [isActiveSlide]);
-
-  // Audio Cleanup on Unmount
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current = null;
-      }
-    };
-  }, []);
 
   // Measure container height
   useEffect(() => {
@@ -237,7 +185,6 @@ export default function Slide_TheNicknames() {
 
   return (
     <div
-      ref={slideRef}
       className="wrapped-slide flex-col !gap-0"
       style={{
         backgroundColor: isJaanu ? "#0a0800" : "#121212",
