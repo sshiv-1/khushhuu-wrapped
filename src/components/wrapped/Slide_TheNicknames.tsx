@@ -13,6 +13,7 @@ interface Nickname {
 const NICKNAMES: Nickname[] = [
   { text: "khushuu", font: "'Great Vibes', cursive" },
   { text: "MS KHUSHI\nSAINI", font: "'Special Elite', cursive" },
+  { text: "JAYRAJ UNCLE\nKI BETI", font: "'Yatra One', cursive" },
   { text: "MS JAGRITI\nKI HG", font: "'Yatra One', cursive" },
   { text: "sweetie", font: "'Pacifico', cursive" },
   { text: "bitch", font: "'Bebas Neue', sans-serif", short: true },
@@ -29,7 +30,7 @@ const NICKNAMES: Nickname[] = [
   { text: "JAANU", font: "'Luckiest Guy', cursive", color: "#ffffff", short: true },
 ];
 
-const JAANU_INDEX = 15;
+const JAANU_INDEX = 16;
 const ITEM_HEIGHT = 120;
 
 export default function Slide_TheNicknames() {
