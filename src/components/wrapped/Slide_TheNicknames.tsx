@@ -37,10 +37,9 @@ export default function Slide_TheNicknames() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
-  const wheelLock = useRef(false);
+  const isAnimating = useRef(false);
   const touchStartY = useRef(0);
   const isJaanu = activeIndex === JAANU_INDEX;
-
 
   // Measure container height
   useEffect(() => {
@@ -69,29 +68,27 @@ export default function Slide_TheNicknames() {
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      if (wheelLock.current) return;
+      if (isAnimating.current) return;
 
       if (e.deltaY > 30) {
         if (activeIndex < NICKNAMES.length - 1) {
           setActiveIndex((i) => Math.min(i + 1, NICKNAMES.length - 1));
-          wheelLock.current = true;
-          setTimeout(() => { wheelLock.current = false; }, 400);
+          isAnimating.current = true;
+          setTimeout(() => { isAnimating.current = false; }, 450);
         } else {
-          // Already at JAANU — pass to parent horizontal scroll
           scrollParent(1);
-          wheelLock.current = true;
-          setTimeout(() => { wheelLock.current = false; }, 600);
+          isAnimating.current = true;
+          setTimeout(() => { isAnimating.current = false; }, 600);
         }
       } else if (e.deltaY < -30) {
         if (activeIndex > 0) {
           setActiveIndex((i) => Math.max(i - 1, 0));
-          wheelLock.current = true;
-          setTimeout(() => { wheelLock.current = false; }, 400);
+          isAnimating.current = true;
+          setTimeout(() => { isAnimating.current = false; }, 450);
         } else {
-          // Already at first name — pass to parent horizontal scroll
           scrollParent(-1);
-          wheelLock.current = true;
-          setTimeout(() => { wheelLock.current = false; }, 600);
+          isAnimating.current = true;
+          setTimeout(() => { isAnimating.current = false; }, 600);
         }
       }
     };
@@ -101,6 +98,7 @@ export default function Slide_TheNicknames() {
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      if (isAnimating.current) return;
       const diff = touchStartY.current - e.changedTouches[0].clientY;
       if (diff > 30) {
         if (activeIndex < NICKNAMES.length - 1) {
@@ -108,12 +106,16 @@ export default function Slide_TheNicknames() {
         } else {
           scrollParent(1);
         }
+        isAnimating.current = true;
+        setTimeout(() => { isAnimating.current = false; }, 450);
       } else if (diff < -30) {
         if (activeIndex > 0) {
           setActiveIndex((i) => Math.max(i - 1, 0));
         } else {
           scrollParent(-1);
         }
+        isAnimating.current = true;
+        setTimeout(() => { isAnimating.current = false; }, 450);
       }
     };
 
@@ -131,6 +133,9 @@ export default function Slide_TheNicknames() {
   // Transform offset — center the active item
   const listOffset = containerHeight / 2 - activeIndex * ITEM_HEIGHT - ITEM_HEIGHT / 2;
 
+  const EASE = "cubic-bezier(0.34, 1.10, 0.64, 1.0)";
+  const ITEM_TRANSITION = `opacity 0.45s ${EASE}, transform 0.45s ${EASE}, filter 0.45s ${EASE}`;
+
   const getItemStyle = useCallback(
     (index: number): React.CSSProperties => {
       if (isJaanu && index !== JAANU_INDEX) {
@@ -138,7 +143,7 @@ export default function Slide_TheNicknames() {
           opacity: 0,
           transform: "scale(0.3)",
           filter: "blur(30px)",
-          transition: "all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          transition: `opacity 0.6s ${EASE}, transform 0.6s ${EASE}, filter 0.6s ${EASE}`,
         };
       }
       const diff = Math.abs(index - activeIndex);
@@ -147,25 +152,25 @@ export default function Slide_TheNicknames() {
           opacity: 1,
           transform: "scale(1)",
           filter: "blur(0px)",
-          transition: "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          transition: ITEM_TRANSITION,
         };
       } else if (diff === 1) {
         return {
           opacity: 0.15,
           transform: "scale(0.7)",
           filter: "blur(12px)",
-          transition: "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          transition: ITEM_TRANSITION,
         };
       } else {
         return {
           opacity: 0.05,
           transform: "scale(0.5)",
           filter: "blur(20px)",
-          transition: "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          transition: ITEM_TRANSITION,
         };
       }
     },
-    [activeIndex, isJaanu]
+    [activeIndex, isJaanu, EASE, ITEM_TRANSITION]
   );
 
   const getFontSize = (nick: Nickname, index: number, active: boolean): string => {
@@ -221,7 +226,7 @@ export default function Slide_TheNicknames() {
         <div
           style={{
             transform: `translateY(${listOffset}px)`,
-            transition: "transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+            transition: `transform 0.45s ${EASE}`,
           }}
         >
           {NICKNAMES.map((nick, idx) => {
@@ -253,7 +258,7 @@ export default function Slide_TheNicknames() {
                       letterSpacing: nick.font.includes("Bebas") ? "0.15em" : nick.font.includes("Luckiest Guy") ? "0.05em" : "0.02em",
                       lineHeight: 1.1,
                       animation: idx === JAANU_INDEX && isJaanu ? "jaanuPulse 2s ease-in-out infinite" : "none",
-                      transition: "font-size 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      transition: `font-size 0.45s ${EASE}`,
                       ...(idx === JAANU_INDEX && {
                         WebkitTextStroke: "3px #2b1d16",
                         textShadow: "0 3px 0 #2b1d16, 0 6px 0 rgba(0,0,0,0.15)",
