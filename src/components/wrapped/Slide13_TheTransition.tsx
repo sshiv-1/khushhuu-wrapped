@@ -2,15 +2,77 @@
 
 import { motion } from "framer-motion";
 
+const STEAM_LINES = ["OOOOOOOOOOO", "OOHHHHHHHHH", "HHHHHHHHHHH"];
+
+function SteamLine({ text, delay }: { text: string; delay: number }) {
+  const steamVariant = {
+    hidden: {
+      opacity: 0,
+      y: 40,
+      filter: "blur(12px)",
+      letterSpacing: "0.15em",
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      letterSpacing: "normal",
+      transition: {
+        duration: 1.2,
+        delay,
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+      },
+    },
+  };
+
+  const ghostStyle: React.CSSProperties = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    pointerEvents: "none",
+    fontFamily: "inherit",
+    fontSize: "inherit",
+    fontWeight: "inherit",
+    fontStyle: "inherit",
+    letterSpacing: "inherit",
+    textAlign: "center",
+  };
+
+  return (
+    <motion.div className="relative w-full text-center" variants={steamVariant}>
+      {/* Ghost wisp 1 */}
+      <motion.span
+        style={{ ...ghostStyle, zIndex: 0 }}
+        initial={{ opacity: 0.06, y: 0, filter: "blur(4px)" }}
+        animate={{ opacity: 0, y: -60, filter: "blur(20px)" }}
+        transition={{ duration: 2, delay: delay + 1.0, ease: "easeOut" }}
+        aria-hidden
+      >
+        {text}
+      </motion.span>
+      {/* Ghost wisp 2 */}
+      <motion.span
+        style={{ ...ghostStyle, zIndex: 0 }}
+        initial={{ opacity: 0.03, y: 0, filter: "blur(6px)" }}
+        animate={{ opacity: 0, y: -100, filter: "blur(20px)" }}
+        transition={{ duration: 2, delay: delay + 1.3, ease: "easeOut" }}
+        aria-hidden
+      >
+        {text}
+      </motion.span>
+      {/* Real text */}
+      <span className="relative" style={{ zIndex: 1 }}>
+        {text}
+      </span>
+    </motion.div>
+  );
+}
+
 export default function Slide13_TheTransition() {
   const lineVariants = {
     hidden: { opacity: 0, y: 15, filter: "blur(4px)" },
     show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.8, ease: "easeOut" as const } },
-  };
-
-  const ohhhVariants = {
-    hidden: { opacity: 0, y: 10, scale: 0.95, filter: "blur(12px)" },
-    show: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 2, ease: "easeOut" as const } },
   };
 
   return (
@@ -54,18 +116,22 @@ export default function Slide13_TheTransition() {
           Never let you go,
         </motion.p>
 
-        <motion.p
-          className="font-serif italic font-medium text-sp-white leading-tight break-all px-2 mt-4"
-          style={{ 
+        {/* Steam OOOOH block */}
+        <motion.div
+          className="font-serif italic font-medium text-sp-white w-full mt-4"
+          style={{
             fontSize: "clamp(2rem, 7vw, 4rem)",
-            letterSpacing: "0.15em",
-            textShadow: "0 0 20px rgba(255,255,255,0.3)"
+            lineHeight: 1.1,
+            textShadow: "0 0 20px rgba(255,255,255,0.3)",
           }}
-          variants={ohhhVariants}
+          variants={{ hidden: {}, show: {} }}
         >
-          OOOOOOOOOOOOOHHHHHHHHHHHHHHHHHHH
-        </motion.p>
+          {STEAM_LINES.map((line, i) => (
+            <SteamLine key={i} text={line} delay={0.3 + i * 0.4} />
+          ))}
+        </motion.div>
       </motion.div>
     </div>
   );
 }
+
