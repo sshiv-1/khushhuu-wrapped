@@ -16,10 +16,11 @@ import Slide11_TheHearts from "./Slide11_TheHearts";
 import Slide12_TheReelThatSaidIt from "./Slide12_TheReelThatSaidIt";
 import Slide_TheNicknames from "./Slide_TheNicknames";
 import Slide13_TheTransition from "./Slide13_TheTransition";
-import Slide13b_TheLetter from "./Slide13b_TheLetter";
+import SlideDrakeBoyy from "./SlideDrakeBoyy";
+import SlideSexySongs from "./SlideSexySongs";
 import Slide14_ThePlaylist from "./Slide14_ThePlaylist";
 
-const TOTAL_SLIDES = 17;
+const TOTAL_SLIDES = 18;
 
 export default function WrappedSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -64,7 +65,8 @@ export default function WrappedSection() {
 
         {/* Part Three: The Music */}
         <Slide13_TheTransition />
-        <Slide13b_TheLetter />
+        <SlideDrakeBoyy />
+        <SlideSexySongs />
         <Slide14_ThePlaylist />
       </div>
 

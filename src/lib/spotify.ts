@@ -13,7 +13,6 @@ export interface SpotifyTrack {
 }
 
 // "luv luv luv" — 24 tracks — 1 hr 22 min
-// Tracks 10 and 11 are TODO placeholders.
 const PLAYLIST_TRACKS: SpotifyTrack[] = [
   {
     title: "Get You (feat. Kali Uchis)",
@@ -96,7 +95,6 @@ const PLAYLIST_TRACKS: SpotifyTrack[] = [
     duration: "2:48",
     order: 9,
   },
-  // TODO: fill in track 10
   {
     title: "—",
     artist: "—",
@@ -106,7 +104,6 @@ const PLAYLIST_TRACKS: SpotifyTrack[] = [
     duration: "",
     order: 10,
   },
-  // TODO: fill in track 11
   {
     title: "—",
     artist: "—",
